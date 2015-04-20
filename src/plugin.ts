@@ -37,13 +37,27 @@ class Locationpool {
         //register all routes
         server.route({
             method: 'GET',
-            path: '/user/{userID}/locations',
+            path: '/user/{userid}/locations',
             config: {
                 handler: (request, reply) => {
-                    // config the handler
+                    // TODO
+                    reply('HUHU');
                 },
-                description: '', // TODO
-                tags: ['', ''] //TODO
+                description: 'Get the location pool of a user',
+                tags: ['api', 'locationpool']
+            }
+        });
+
+        server.route({
+            method: 'GET',
+            path: '/user/{userid}/locations/{locationsid}',
+            config: {
+                handler: (request, reply) => {
+                    // TODO
+                    reply('HUHU');
+                },
+                description: 'Get a single location of a user',
+                tags: ['api', 'locationpool']
             }
         });
 
