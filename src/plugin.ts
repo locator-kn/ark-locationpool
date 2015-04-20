@@ -42,6 +42,7 @@ class Locationpool {
             path: '/user/{userid}/locations',
             config: {
                 handler: (request, reply) => {
+                    // TODO: check user id???
                     this.db.getLocationsByUserId(request.params.userid, (err, data) => {
                         if (err) {
                             return reply(this.boom.wrap(err, 400));
@@ -53,6 +54,7 @@ class Locationpool {
                 notes: 'Return a list of all saved (lightweight) location of a user. Lightweight means that the ' +
                 'pictures are only returned as small thumbnails.',
                 tags: ['api', 'locationpool']
+                // TODO: validate
             }
         });
 
@@ -71,6 +73,7 @@ class Locationpool {
                 description: 'Get a single location of a user',
                 note: 'Returns a particular saved location of a user.',
                 tags: ['api', 'locationpool']
+                // TODO: validate
             }
         });
 
@@ -85,6 +88,7 @@ class Locationpool {
                 },
                 description: 'Post a single location for a user',
                 tags: ['api', 'locationpool']
+                // TODO: validate
             }
         });
 
@@ -118,11 +122,12 @@ class Locationpool {
                 description: 'Delete all locations of a user',
                 notes: 'Deletes all locations',
                 tags: ['api', 'locationpool']
+                // TODO: validate
             }
         });
 
         server.route({
-            method: 'GET',
+            method: 'DELETE',
             path: '/user/{userid}/locations/{locationsid}',
             config: {
                 handler: (request, reply) => {
@@ -136,6 +141,7 @@ class Locationpool {
                 description: 'Delete a single location of a user',
                 note: 'Deletes a particular saved location of a user.',
                 tags: ['api', 'locationpool']
+                // TODO: validate
             }
         });
 
