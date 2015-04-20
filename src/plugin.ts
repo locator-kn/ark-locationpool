@@ -61,6 +61,32 @@ class Locationpool {
             }
         });
 
+        server.route({
+            method: 'POST',
+            path: '/user/{userid}/locations',
+            config: {
+                handler: (request, reply) => {
+                    // TODO
+                    reply('HUHU');
+                },
+                description: 'Post a single location for a user',
+                tags: ['api', 'locationpool']
+            }
+        });
+
+        server.route({
+            method: 'PUT',
+            path: '/user/{userid}/locations/{locationsid}',
+            config: {
+                handler: (request, reply) => {
+                    // TODO
+                    reply('HUHU');
+                },
+                description: 'Update a single location for a user',
+                tags: ['api', 'locationpool']
+            }
+        });
+
         // Register
         return 'register';
     }
