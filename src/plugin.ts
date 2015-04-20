@@ -71,7 +71,7 @@ class Locationpool {
                     });
                 },
                 description: 'Get a single location of a user',
-                note: 'Returns a particular saved location of a user.',
+                notes: 'Returns a particular saved location of a user.',
                 tags: ['api', 'locationpool']
                 // TODO: validate
             }
@@ -139,7 +139,7 @@ class Locationpool {
                     });
                 },
                 description: 'Delete a single location of a user',
-                note: 'Deletes a particular saved location of a user.',
+                notes: 'Deletes a particular saved location of a user.',
                 tags: ['api', 'locationpool']
                 // TODO: validate
             }
