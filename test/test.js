@@ -7,6 +7,7 @@ var lab = exports.lab = Lab.script();
 var describe = lab.describe;
 var it = lab.it;
 var expect = Code.expect;
+var test = lab.test;
 
 
 describe('Plugin', function () {
@@ -57,8 +58,8 @@ lab.experiment('Locationpool Plugin GET location', function () {
         done();
     });
 
-    lab.test('it returns a not found when find by user id misses', function (done) {
-        // stub location
+    test('it returns a not found when find by user id misses', function (done) {
+        // TODO: stub location
 
         // send the request to the server
         server.inject(request, function (response) {
@@ -67,23 +68,23 @@ lab.experiment('Locationpool Plugin GET location', function () {
         });
     });
 
-    lab.test('it returns an error when find by user id misses', function (done) {
-
+    test('it returns an error when find by user id misses', function (done) {
+        //TODO
         done();
     });
 
-    lab.test('it returns an error when find by location id misses', function (done) {
-
+    test('it returns an error when find by location id misses', function (done) {
+        //TODO
         done();
     });
 
-    lab.test('it returns a not found when find by location id misses', function (done) {
-
+    test('it returns a not found when find by location id misses', function (done) {
+        //TODO
         done();
     });
 
-    lab.test('it returns a document successfully', function (done) {
-
+    test('it returns a document successfully', function (done) {
+        //TODO
         done();
     });
 
