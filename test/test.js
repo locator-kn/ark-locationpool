@@ -24,7 +24,26 @@ describe('Plugin', function () {
     });
 });
 
+var request, server;
 
+// set up the whole test
+lab.before(function (done) {
+
+    // set up server
+    server = new Hapi.Server();
+    server.connection({host: 'localhost', port: 80});
+
+    // register needed plugins
+    var plugins = [new Plugin()];
+    server.register(plugins, function (err) {
+        if (err) {
+            return done(err);
+        }
+        done();
+    });
+});
+
+// test the GET request for a location pool
 lab.experiment('Locationpool Plugin GET location', function () {
 
     // function to be called before each test
@@ -39,16 +58,21 @@ lab.experiment('Locationpool Plugin GET location', function () {
     });
 
     lab.test('it returns a not found when find by user id misses', function (done) {
+        // stub location
+
+        // send the request to the server
+        server.inject(request, function (response) {
+            expect(response.statusCode).to.equal(404);
+            done();
+        });
+    });
+
+    lab.test('it returns an error when find by user id misses', function (done) {
 
         done();
     });
 
-    lab.test('it returns a not found when find by location id misses', function (done) {
-
-        done();
-    });
-
-    lab.test('it returns a not found when find by user id misses', function (done) {
+    lab.test('it returns an error when find by location id misses', function (done) {
 
         done();
     });
