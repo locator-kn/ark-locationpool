@@ -23,3 +23,44 @@ describe('Plugin', function () {
         });
     });
 });
+
+
+lab.experiment('Locationpool Plugin GET location', function () {
+
+    // function to be called before each test
+    lab.beforeEach(function (done) {
+
+        request = {
+            method: 'GET',
+            url: '/user/4386558346954769843/locations/98534650973650'
+            //credentials: AuthenticatedUser
+        };
+        done();
+    });
+
+    lab.test('it returns a not found when find by user id misses', function (done) {
+
+        done();
+    });
+
+    lab.test('it returns a not found when find by location id misses', function (done) {
+
+        done();
+    });
+
+    lab.test('it returns a not found when find by user id misses', function (done) {
+
+        done();
+    });
+
+    lab.test('it returns a not found when find by location id misses', function (done) {
+
+        done();
+    });
+
+    lab.test('it returns a document successfully', function (done) {
+
+        done();
+    });
+
+});
