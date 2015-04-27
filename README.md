@@ -57,6 +57,7 @@ Note: Bulk add will be done if payload is array.
    "geotag": {
        "long": "47.668475",
        "lat": "9.170435"
-   }
+   },
+   "userId": "9ab15b624eec31eb56dffa3ed10006f5"
 }
 ```
