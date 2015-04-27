@@ -40,7 +40,7 @@ Note: Bulk add will be done if payload is array.
 
 
 
-### Dummy json results
+### Dummy json for GET:
 
 ```
 {
@@ -59,5 +59,29 @@ Note: Bulk add will be done if payload is array.
        "lat": "9.170435"
    },
    "userId": "9ab15b624eec31eb56dffa3ed10006f5"
+}
+```
+
+### Dummy json for POST:
+
+param: 
+```
+"userId": "9ab15b624eec31eb56dffa3ed10006f5"
+```
+
+```
+{
+   "title": "Strandbar",
+   "description": "Fett maan! Sand und Bier! Geile Musiiik!!",
+   "city": "constance",
+   "budget": 100,
+   "pics": [
+   ],
+   "category": "studentenshit",
+   "type": "location",
+   "geotag": {
+       "long": "47.668475",
+       "lat": "9.170435"
+   }
 }
 ```
