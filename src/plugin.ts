@@ -130,7 +130,7 @@ class Locationpool {
             path: '/user/{userid}/locations/{locationid}',
             config: {
                 handler: (request, reply) => {
-                    this.db.updateLocation(request.params.locationid, request.params.userid, request.payload, (err, data) => {
+                    this.db.updateLocation(request.params.locationid, request.payload._rev, request.payload, (err, data) => {
                         if (err) {
                             return reply(this.boom.wrap(err, 400, err.details.message));
                         }
@@ -175,7 +175,7 @@ class Locationpool {
 
         server.route({
             method: 'DELETE',
-            path: '/user/{userid}/locations/{locationsid}',
+            path: '/user/{userid}/locations/{locationid}',
             config: {
                 handler: (request, reply) => {
                     this.db.deleteLocationById(request.params.locationid, (err, data) => {
