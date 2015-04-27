@@ -59,6 +59,7 @@ class Locationpool {
             path: '/user/{userid}/locations',
             config: {
                 handler: (request, reply) => {
+                    //TODO: check if correct user
                     this.db.getLocationsByUserId(request.params.userid, (err, data) => {
                         if (err) {
                             return reply(this.boom.wrap(err, 400));
@@ -84,6 +85,7 @@ class Locationpool {
             path: '/user/{userid}/locations/{locationid}',
             config: {
                 handler: (request, reply) => {
+                    // TODO: check correct user
                     this.db.getLocationById(request.params.locationid, (err, data) => {
                         if (err) {
                             return reply(this.boom.wrap(err, 400));
@@ -109,6 +111,9 @@ class Locationpool {
             path: '/user/{userid}/locations',
             config: {
                 handler: (request, reply) => {
+
+                    // TODO: check if user exist
+
                     this.db.createLocation(request.params.userid, request.payload, (err, data) => {
                         if (err) {
                             return reply(this.boom.wrap(err, 400));
@@ -133,7 +138,9 @@ class Locationpool {
             path: '/user/{userid}/locations/{locationid}',
             config: {
                 handler: (request, reply) => {
-                    this.db.updateLocation(request.params.locationid, request.payload._rev, request.payload, (err, data) => {
+                    // TODO: check if user is authorized to change this location (is it his own location?)
+
+                    this.db.updateLocation(request.payload._id, request.payload._rev, request.payload, (err, data) => {
                         if (err) {
                             return reply(this.boom.wrap(err, 400, err.details.message));
                         }
@@ -158,6 +165,7 @@ class Locationpool {
             path: '/user/{userid}/locations',
             config: {
                 handler: (request, reply) => {
+                    // TODO: check if user is authorized to delete these locations (are these his own locations?)
                     this.db.deleteLocationsByUserId(request.params.userid, (err, data) => {
                         if (err) {
                             return reply(this.boom.wrap(err, 400));
@@ -181,6 +189,8 @@ class Locationpool {
             path: '/user/{userid}/locations/{locationid}',
             config: {
                 handler: (request, reply) => {
+
+                    // TODO: check if user is authorized to delete this location (is it his own location?)
                     this.db.deleteLocationById(request.params.locationid, (err, data) => {
                         if (err) {
                             return reply(this.boom.wrap(err, 400));
