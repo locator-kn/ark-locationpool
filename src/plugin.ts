@@ -32,7 +32,7 @@ class Locationpool {
             version: '0.1.0'
         };
         this.joi = require('joi');
-        this.boom = require('Boom');
+        this.boom = require('boom');
 
         this.initSchema();
     }
@@ -230,7 +230,7 @@ class Locationpool {
             title: this.joi.string().required(),
             description: this.joi.string().required(),
             city: this.joi.string().required(),
-            geotag: this.joi.object().keys( {
+            geotag: this.joi.object().keys({
                 long: this.joi.string(),
                 lat: this.joi.string()
             }),
