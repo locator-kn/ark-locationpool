@@ -9,7 +9,10 @@ export interface ILocationpool {
     title: string;
     description: string;
     city: string;
-    geotag: string; // TODO: string??
+    geotag: {
+        long: string;
+        lat: string;
+    }
     budget: number;
     pics: string[];
     category: string;
@@ -108,7 +111,7 @@ class Locationpool {
                 handler: (request, reply) => {
                     this.db.createLocation(request.params.userid, request.payload, (err, data) => {
                         if (err) {
-                            return reply(this.boom.wrap(err, 400, err.details.message));
+                            return reply(this.boom.wrap(err, 400));
                         }
                         reply(data);
                     });
@@ -217,11 +220,14 @@ class Locationpool {
             title: this.joi.string().required(),
             description: this.joi.string().required(),
             city: this.joi.string().required(),
-            geotag: this.joi.string(),
+            geotag: this.joi.object().keys( {
+                long: this.joi.string(),
+                lat: this.joi.string()
+            }),
             budget: this.joi.number(),
             pics: this.joi.array(), // TODO: could be better?
             category: this.joi.string(),
-            type: this.joi.string.required().only('location')
+            type: this.joi.string().required().only('location')
         });
 
         this.locationSchemePUT = this.locationSchemePOST
