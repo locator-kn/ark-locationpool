@@ -1,7 +1,13 @@
-var Plugin = require('../index');
+'use strict';
 var Code = require('code');
 var Hapi = require('hapi');
 var Lab = require('lab');
+var sinon = require('sinon');
+
+// home made plugins
+var Locationpool = require('../index');
+var Database = require('backend-database');
+
 // Test shortcuts
 var lab = exports.lab = Lab.script();
 var describe = lab.describe;
@@ -9,33 +15,25 @@ var it = lab.it;
 var expect = Code.expect;
 var test = lab.test;
 
-
-describe('Plugin', function () {
-    it('should work', function (done) {
-        var server = new Hapi.Server();
-        var plugin = new Plugin();
-        server.connection({host: 'localhost', port: 80});
-
-        server.register(plugin, function (err) {
-            expect(err).to.not.exist();
-            expect(plugin._register).to.be.a.function();
-            expect(plugin._register()).to.be.a.string();
-            done();
-        });
-    });
-});
-
-var request, server;
+var request, server, locationpool, database;
 
 // set up the whole test
 lab.before(function (done) {
 
     // set up server
     server = new Hapi.Server();
-    server.connection({host: 'localhost', port: 80});
+    server.connection({host: 'localhost', port: 3030});
+
+    locationpool = new Locationpool();
+    database = sinon.mock(new Database());
+    console.log("woop");
+    //
+    //sinon.stub(database.location, 'getLocationById', function (callback) {
+    //    return '';
+    //});
 
     // register needed plugins
-    var plugins = [new Plugin()];
+    var plugins = [locationpool, database];
     server.register(plugins, function (err) {
         if (err) {
             return done(err);
@@ -59,7 +57,7 @@ lab.experiment('Locationpool Plugin GET location', function () {
     });
 
     test('it returns a not found when find by user id misses', function (done) {
-        // TODO: stub location
+
 
         // send the request to the server
         server.inject(request, function (response) {
@@ -88,4 +86,20 @@ lab.experiment('Locationpool Plugin GET location', function () {
         done();
     });
 
+});
+
+
+describe('Plugin', function () {
+    it('should work', function (done) {
+        var server = new Hapi.Server();
+        var plugin = new Plugin();
+        server.connection({host: 'localhost', port: 80});
+
+        server.register(plugin, function (err) {
+            expect(err).to.not.exist();
+            expect(plugin._register).to.be.a.function();
+            expect(plugin._register()).to.be.a.string();
+            done();
+        });
+    });
 });
