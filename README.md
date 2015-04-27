@@ -54,7 +54,7 @@ Note: Bulk add will be done if payload is array.
    ],
    "category": "studentenshit",
    "type": "location",
-   "coords": {
+   "geotag": {
        "long": "47.668475",
        "lat": "9.170435"
    }
