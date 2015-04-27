@@ -56,7 +56,6 @@ class Locationpool {
             path: '/user/{userid}/locations',
             config: {
                 handler: (request, reply) => {
-                    // TODO: check user id???
                     this.db.getLocationsByUserId(request.params.userid, (err, data) => {
                         if (err) {
                             return reply(this.boom.wrap(err, 400));
@@ -75,6 +74,7 @@ class Locationpool {
                 }
             }
         });
+
 
         server.route({
             method: 'GET',
@@ -106,8 +106,12 @@ class Locationpool {
             path: '/user/{userid}/locations',
             config: {
                 handler: (request, reply) => {
-                    // TODO
-                    reply('HUHU');
+                    this.db.createLocation(request.params.userid, request.payload, (err, data) => {
+                        if (err) {
+                            return reply(this.boom.wrap(err, 400, err.details.message));
+                        }
+                        reply(data);
+                    });
                 },
                 description: 'Post a single location for a user',
                 tags: ['api', 'locationpool'],
@@ -126,8 +130,12 @@ class Locationpool {
             path: '/user/{userid}/locations/{locationid}',
             config: {
                 handler: (request, reply) => {
-                    // TODO
-                    reply('HUHU');
+                    this.db.updateLocation(request.params.locationid, request.params.userid, request.payload, (err, data) => {
+                        if (err) {
+                            return reply(this.boom.wrap(err, 400, err.details.message));
+                        }
+                        reply(data);
+                    });
                 },
                 description: 'Update a single location for a user',
                 tags: ['api', 'locationpool'],
@@ -204,7 +212,7 @@ class Locationpool {
      */
     private initSchema():void {
         // basic schema
-        var location = this.joi.object().keys({
+        this.locationSchemePOST = this.joi.object().keys({
             // TODO: better validator, regex???
             title: this.joi.string().required(),
             description: this.joi.string().required(),
@@ -216,12 +224,11 @@ class Locationpool {
             type: this.joi.string.required().only('location')
         });
 
-        this.locationSchemePOST = location;
-
-        this.locationSchemePUT.concat(this.joi.object().keys({
-            _id: this.joi.string().required(),
-            _rev: this.joi.string().required()
-        }));
+        this.locationSchemePUT = this.locationSchemePOST
+            .concat(this.joi.object().keys({
+                _id: this.joi.string().required(),
+                _rev: this.joi.string().required()
+            }));
 
     }
 
