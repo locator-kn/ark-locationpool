@@ -25,7 +25,7 @@ class Locationpool {
 
     constructor() {
         this.register.attributes = {
-            name: 'backend-locationpool',
+            name: 'ark-locationpool',
             version: '0.1.0'
         };
         this.joi = require('joi');
@@ -38,8 +38,8 @@ class Locationpool {
         server.bind(this);
 
         // set dependency to the database plugin
-        server.dependency('backend-database', (server, next) => {
-            this.db = server.plugins['backend-database'];
+        server.dependency('ark-database', (server, next) => {
+            this.db = server.plugins['ark-database'];
             next();
         });
 
