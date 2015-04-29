@@ -3,18 +3,6 @@ export interface IRegister {
     attributes?: any;
 }
 
-export interface ILocationpool {
-    _id: string;
-    _rev?: string;
-    title: string;
-    description: string;
-    city: string;
-    geotag: string; // TODO: string??
-    budget: number;
-    pics: string[];
-    category: string;
-    type: string;
-}
 export default
 class Locationpool {
     private joi:any;
