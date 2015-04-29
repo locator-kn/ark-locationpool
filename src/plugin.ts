@@ -41,7 +41,7 @@ class Locationpool {
         // GET
         server.route({
             method: 'GET',
-            path: '/user/{userid}/locations',
+            path: '/users/{userid}/locations',
             config: {
                 handler: (request, reply) => {
                     //TODO: check if correct user
@@ -67,7 +67,7 @@ class Locationpool {
 
         server.route({
             method: 'GET',
-            path: '/user/{userid}/locations/{locationid}',
+            path: '/users/{userid}/locations/{locationid}',
             config: {
                 handler: (request, reply) => {
                     // TODO: check correct user
@@ -93,7 +93,7 @@ class Locationpool {
         // POST
         server.route({
             method: 'POST',
-            path: '/user/{userid}/locations',
+            path: '/users/{userid}/locations',
             config: {
                 handler: (request, reply) => {
 
@@ -120,7 +120,7 @@ class Locationpool {
         // PUT
         server.route({
             method: 'PUT',
-            path: '/user/{userid}/locations/{locationid}',
+            path: '/users/{userid}/locations/{locationid}',
             config: {
                 handler: (request, reply) => {
                     // TODO: check if user is authorized to change this location (is it his own location?)
@@ -147,7 +147,7 @@ class Locationpool {
         // DELETE
         server.route({
             method: 'DELETE',
-            path: '/user/{userid}/locations',
+            path: '/users/{userid}/locations',
             config: {
                 handler: (request, reply) => {
                     // TODO: check if user is authorized to delete these locations (are these his own locations?)
@@ -171,7 +171,7 @@ class Locationpool {
 
         server.route({
             method: 'DELETE',
-            path: '/user/{userid}/locations/{locationid}',
+            path: '/users/{userid}/locations/{locationid}',
             config: {
                 handler: (request, reply) => {
 
