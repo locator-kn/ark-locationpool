@@ -40,19 +40,48 @@ Note: Bulk add will be done if payload is array.
 
 
 
-### Dummy json results
+### Dummy json for GET:
 
 ```
 {
-  "_id:" "1849ef313fbc39f078084f9168000e16",
-  "_rev": "4-c726329a4e810962443ce5a7a176b00c",
-  "title": "Strandbar",
-  "description": "Fett man! Sand und so! Geile Musiiik!!",
-  "city": "constance",
-  "geotag": "",
-  "budget": 100,
-  "pics": [],
-  "category": "studentenshit",
-  "type": "location"
+   "_id": "9ab15b624eec31eb56dffa3ed10006f7",
+   "_rev": "1-eba4d566488a8efb82edd9dcb3d3be1c",
+   "title": "Strandbar",
+   "description": "Fett maan! Sand und Bier! Geile Musiiik!!",
+   "city": "constance",
+   "budget": 100,
+   "pics": [
+   ],
+   "category": "studentenshit",
+   "type": "location",
+   "geotag": {
+       "long": "47.668475",
+       "lat": "9.170435"
+   },
+   "userId": "9ab15b624eec31eb56dffa3ed10006f5"
+}
+```
+
+### Dummy json for POST:
+
+param: 
+```
+"userId": "492387434908fs5747e35"
+```
+
+```
+{
+   "title": "Strandbar",
+   "description": "Fett maan! Sand und Bier! Geile Musiiik!!",
+   "city": "constance",
+   "budget": 100,
+   "pics": [
+   ],
+   "category": "studentenshit",
+   "type": "location",
+   "geotag": {
+       "long": "47.668475",
+       "lat": "9.170435"
+   }
 }
 ```

@@ -1,6 +1,6 @@
 {
   "name": "ark-locationpool",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Plugin for managing all location of a user",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,6 @@
   "peerDependencies": {
     "hapi": ">=8.x.x"
   },
-  "repository": "locator-kn/ark-locationpool",
   "devDependencies": {
     "code": "1.x.x",
     "gulp": "^3.8.11",
