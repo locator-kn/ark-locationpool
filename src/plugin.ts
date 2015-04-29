@@ -189,12 +189,6 @@ class Locationpool {
         return 'register';
     }
 
-    errorInit(error) {
-        if (error) {
-            console.log('Error: Failed to load plugin (Locationpool):', error);
-        }
-    }
-
     /**
      * Create validation schema for location.
      */
