@@ -20,20 +20,20 @@ Der Locationpool eines Benutzers besteht aus einer _leichtgewichtige_ Liste alle
 
 |Ressource   | Description  |  on Success | on Failure |
 |---|---|---|---|
-|/user/:userID/locations/  | returns a locationpool (list) of saved location of the user   | json object | statusCode: 404 |
-|/user/:userID/locations/:locationsID | returns a particular saved location of the user | json object | statusCode: 404 |
+|/users/:userID/locations/  | returns a locationpool (list) of saved location of the user   | json object | statusCode: 404 |
+|/users/:userID/locations/:locationsID | returns a particular saved location of the user | json object | statusCode: 404 |
 
 ####DELETE
 |Ressource   | Description  |  on Success | on Failure |
 |---|---|---|---|
-|/user/:userID/locations/ | deletes a locationpool (list) of saved location of the user   | json object | statusCode: 404 |
-|/user/:userID/locations/:locationsID | deletes a particular saved location of the user | json object | statusCode: 404 |
+|/users/:userID/locations/ | deletes a locationpool (list) of saved location of the user   | json object | statusCode: 404 |
+|/users/:userID/locations/:locationsID | deletes a particular saved location of the user | json object | statusCode: 404 |
 
 ####POST
 
 |Ressource   | Description  | on Failure |
 |---|---|---|---|
-|/user/:userID/locations/  | adds a location into the location pool of the user   |  statusCode: 404 |
+|/users/:userID/locations/  | adds a location into the location pool of the user   |  statusCode: 404 |
 
 Note: Bulk add will be done if payload is array.
 
@@ -42,7 +42,7 @@ Note: Bulk add will be done if payload is array.
 
 |Ressource   | Description  | on Failure |
 |---|---|---|---|
-|/user/:userID/locations/:locationsID  | updates a location of the location pool of the user   |  statusCode: 404 |
+|/users/:userID/locations/:locationsID  | updates a location of the location pool of the user   |  statusCode: 404 |
 
 
 
