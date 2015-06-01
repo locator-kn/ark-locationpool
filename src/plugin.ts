@@ -13,8 +13,7 @@ class Locationpool {
 
     constructor() {
         this.register.attributes = {
-            name: 'ark-locationpool',
-            version: '0.1.0'
+            pkg: require('./../../package.json')
         };
         this.joi = require('joi');
         this.boom = require('boom');
@@ -41,11 +40,11 @@ class Locationpool {
         // GET
         server.route({
             method: 'GET',
-            path: '/users/{userid}/locations',
+            path: '/users/my/locations',
             config: {
                 handler: (request, reply) => {
-                    //TODO: check if correct user
-                    this.db.getLocationsByUserId(request.params.userid, (err, data) => {
+
+                    this.db.getLocationsByUserId(request.auth.credentials._id, (err, data) => {
                         if (err) {
                             return reply(this.boom.wrap(err, 400));
                         }
@@ -55,27 +54,28 @@ class Locationpool {
                 description: 'Get the location pool of a user',
                 notes: 'Return a list of all saved (lightweight) location of a user. Lightweight means that the ' +
                 'pictures are only returned as small thumbnails.',
-                tags: ['api', 'locationpool'],
-                validate: {
-                    params: {
-                        userid: this.joi.string().required()
-                    }
-                }
+                tags: ['api', 'locationpool']
             }
         });
 
 
         server.route({
             method: 'GET',
-            path: '/users/{userid}/locations/{locationid}',
+            path: '/users/my/locations/{locationid}',
             config: {
                 handler: (request, reply) => {
-                    // TODO: check correct user
                     this.db.getLocationById(request.params.locationid, (err, data) => {
                         if (err) {
-                            return reply(this.boom.wrap(err, 400));
+                            return reply(this.boom.create(400, err));
                         }
-                        reply(data);
+                        // check if the returned location belongs to this user
+                        if (!data.owner) {
+                            reply(this.boom.create(501, "come back later"));
+                        }
+                        if (data.owner !== request.auth.credentials._id) {
+                            return reply(this.boom.create(403, "Not Authorized"));
+                        }
+                        return reply(data);
                     });
                 },
                 description: 'Get a single location of a user',
@@ -83,7 +83,6 @@ class Locationpool {
                 tags: ['api', 'locationpool'],
                 validate: {
                     params: {
-                        userid: this.joi.string().required(),
                         locationid: this.joi.string().required()
                     }
                 }
@@ -225,4 +224,5 @@ class Locationpool {
                 _rev: this.joi.string().required()
             }));
 
-    }}
+    }
+}
