@@ -225,4 +225,31 @@ class Locationpool {
         })
 
     }
+
+    private isItMyLocation(userid:string, locationid:string):Promise {
+
+        return new Promise((reject, resolve) => {
+            // first, get the location
+            this.db.getLocationById(locationid, (err, data) => {
+
+                if (err) {
+                    return reject(err);
+                }
+
+                // check if the returned location belongs to this user
+                if (data.owner !== userid) {
+                    return reject();
+                }
+
+                return resolve(data);
+            });
+        });
+    }
+
+    private notAuthorized(err:any, reply:any):void {
+        if (err) {
+            return reply(this.boom.create(400, err));
+        }
+        return reply(this.boom.create(403, "Not Authorized"));
+    }
 }
