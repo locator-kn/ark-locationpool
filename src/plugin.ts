@@ -92,18 +92,23 @@ class Locationpool {
         // POST
         server.route({
             method: 'POST',
-            path: '/users/{userid}/locations',
+            path: '/users/my/locations',
             config: {
                 handler: (request, reply) => {
 
-                    // TODO: check if user exist
+                    request.payload.owner = request.auth.credentials._id;
+                    request.payload.type = "location";
 
-                    this.db.createLocation(request.params.userid, request.payload, (err, data) => {
-                        if (err) {
-                            return reply(this.boom.wrap(err, 400));
-                        }
-                        reply(data);
-                    });
+                    var locationID;
+
+                    this.db.createLocation(request.payload).then(value => {
+                            locationID = value.id;
+                            return this.db.updateLocationOfUser(request.auth.credentials._id, locationID);
+                        }).then(value => {
+                            return reply({messages: 'success', id: locationID})
+                        }).catch(error => {
+                            return reply(this.boom.wrap(error, 400));
+                        });
                 },
                 description: 'Post a single location for a user',
                 tags: ['api', 'locationpool'],
