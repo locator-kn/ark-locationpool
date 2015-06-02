@@ -8,8 +8,8 @@ class Locationpool {
     private joi:any;
     private boom:any;
     private db:any;
-    private locationSchemePUT:any;
     private locationSchemePOST:any;
+    private locationSchemePUT:any;
 
     constructor() {
         this.register.attributes = {
@@ -68,10 +68,11 @@ class Locationpool {
                         if (err) {
                             return reply(this.boom.create(400, err));
                         }
-                        // check if the returned location belongs to this user
                         if (!data.owner) {
                             reply(this.boom.create(501, "come back later"));
                         }
+
+                        // check if the returned location belongs to this user
                         if (data.owner !== request.auth.credentials._id) {
                             return reply(this.boom.create(403, "Not Authorized"));
                         }
@@ -124,16 +125,14 @@ class Locationpool {
         // PUT
         server.route({
             method: 'PUT',
-            path: '/users/{userid}/locations/{locationid}',
+            path: '/users/my/locations/{locationid}',
             config: {
                 handler: (request, reply) => {
-                    // TODO: check if user is authorized to change this location (is it his own location?)
-
-                    this.db.updateLocation(request.payload._id, request.payload._rev, request.payload, (err, data) => {
+                    this.db.updateLocation(request.auth.credentials._id, request.params.locationid, request.payload, (err, data) => {
                         if (err) {
-                            return reply(this.boom.wrap(err, 400, err.details.message));
+                            return reply(err);
                         }
-                        reply(data);
+                        return reply(data);
                     });
                 },
                 description: 'Update a single location for a user',
@@ -141,7 +140,6 @@ class Locationpool {
                 validate: {
                     payload: this.locationSchemePUT.required().description('Location JSON object'),
                     params: {
-                        userid: this.joi.string().required(),
                         locationid: this.joi.string().required()
                     }
                 }
@@ -218,16 +216,13 @@ class Locationpool {
                 lat: this.joi.string()
             }),
             budget: this.joi.number(),
-            pics: this.joi.array(), // TODO: could be better?
             category: this.joi.string(),
-            type: this.joi.string().required().only('location')
         });
 
-        this.locationSchemePUT = this.locationSchemePOST
-            .concat(this.joi.object().keys({
-                _id: this.joi.string().required(),
-                _rev: this.joi.string().required()
-            }));
+        this.locationSchemePUT = this.joi.object().keys({
+            title: this.joi.strig(),
+            description: this.joi.string(),
+        })
 
     }
 }
