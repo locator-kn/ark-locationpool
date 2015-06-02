@@ -64,20 +64,10 @@ class Locationpool {
             path: '/users/my/locations/{locationid}',
             config: {
                 handler: (request, reply) => {
-                    this.db.getLocationById(request.params.locationid, (err, data) => {
-                        if (err) {
-                            return reply(this.boom.create(400, err));
-                        }
-                        if (!data.owner) {
-                            reply(this.boom.create(501, "come back later"));
-                        }
-
-                        // check if the returned location belongs to this user
-                        if (data.owner !== request.auth.credentials._id) {
-                            return reply(this.boom.create(403, "Not Authorized"));
-                        }
-                        return reply(data);
-                    });
+                    this.isItMyLocation(request.auth.credentials._id, request.params.locationid)
+                        .then(value => {
+                            return reply(value);
+                        }).catch(err => this.notAuthorized(err, reply));
                 },
                 description: 'Get a single location of a user',
                 notes: 'Returns a particular saved location of a user.',
@@ -103,21 +93,19 @@ class Locationpool {
                     var locationID;
 
                     this.db.createLocation(request.payload).then(value => {
-                            locationID = value.id;
-                            return this.db.updateLocationOfUser(request.auth.credentials._id, locationID);
-                        }).then(value => {
-                            return reply({messages: 'success', id: locationID})
-                        }).catch(error => {
-                            return reply(this.boom.wrap(error, 400));
-                        });
+                        locationID = value.id;
+                        return this.db.updateLocationOfUser(request.auth.credentials._id, locationID);
+                    }).then(value => {
+                        return reply({messages: 'success', id: locationID})
+                    }).catch(error => {
+                        return reply(this.boom.wrap(error, 400));
+                    });
                 },
-                description: 'Post a single location for a user',
+                description: 'Create a single location for a user',
                 tags: ['api', 'locationpool'],
                 validate: {
-                    payload: this.locationSchemePOST.required().description('Location JSON object'),
-                    params: {
-                        userid: this.joi.string().required()
-                    }
+                    payload: this.locationSchemePOST.required()
+                        .description('Location JSON object')
                 }
             }
         });
@@ -128,12 +116,18 @@ class Locationpool {
             path: '/users/my/locations/{locationid}',
             config: {
                 handler: (request, reply) => {
-                    this.db.updateLocation(request.auth.credentials._id, request.params.locationid, request.payload, (err, data) => {
-                        if (err) {
-                            return reply(err);
-                        }
-                        return reply(data);
-                    });
+                    // first, get the location
+                    this.isItMyLocation(request.auth.credentials._id, request.params.locationid)
+                        .then(() => {
+                            // correct user => update location
+                            this.db.updateLocation(request.params.locationid, request.payload, (err, data) => {
+                                if (err) {
+                                    return reply(err);
+                                }
+                                return reply(data);
+                            });
+                        }).catch(err => this.notAuthorized(err, reply));
+
                 },
                 description: 'Update a single location for a user',
                 tags: ['api', 'locationpool'],
@@ -149,11 +143,10 @@ class Locationpool {
         // DELETE
         server.route({
             method: 'DELETE',
-            path: '/users/{userid}/locations',
+            path: '/users/my/locations',
             config: {
                 handler: (request, reply) => {
-                    // TODO: check if user is authorized to delete these locations (are these his own locations?)
-                    this.db.deleteLocationsByUserId(request.params.userid, (err, data) => {
+                    this.db.deleteLocationsByUserId(request.auth.credentials._id, (err, data) => {
                         if (err) {
                             return reply(this.boom.wrap(err, 400));
                         }
@@ -162,35 +155,31 @@ class Locationpool {
                 },
                 description: 'Delete all locations of a user',
                 notes: 'Deletes all locations',
-                tags: ['api', 'locationpool'],
-                validate: {
-                    params: {
-                        userid: this.joi.string().required()
-                    }
-                }
+                tags: ['api', 'locationpool']
             }
         });
 
         server.route({
             method: 'DELETE',
-            path: '/users/{userid}/locations/{locationid}',
+            path: '/users/my/locations/{locationid}',
             config: {
                 handler: (request, reply) => {
+                    this.isItMyLocation(request.auth.credentials._id, request.params.locationid)
+                        .then(() => {
+                            this.db.deleteLocationById(request.params.locationid, (err, data) => {
+                                if (err) {
+                                    return reply(this.boom.wrap(err, 400));
+                                }
+                                reply(data);
+                            });
+                        }).catch(err => this.notAuthorized(err, reply));
 
-                    // TODO: check if user is authorized to delete this location (is it his own location?)
-                    this.db.deleteLocationById(request.params.locationid, (err, data) => {
-                        if (err) {
-                            return reply(this.boom.wrap(err, 400));
-                        }
-                        reply(data);
-                    });
                 },
                 description: 'Delete a single location of a user',
                 notes: 'Deletes a particular saved location of a user.',
                 tags: ['api', 'locationpool'],
                 validate: {
                     params: {
-                        userid: this.joi.string().required(),
                         locationid: this.joi.string().required()
                     }
                 }
