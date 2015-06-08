@@ -86,7 +86,7 @@ class Locationpool {
             config: {
                 auth: false,
                 handler: (request, reply) => {
-                    this.db.getgetLocationById(request.params.locationid)
+                    this.db.getLocationById(request.params.locationid)
                         .then(value => reply(value))
                         .catch(err => reply(err));
                 },
