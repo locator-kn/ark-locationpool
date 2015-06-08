@@ -13,6 +13,7 @@ class Locationpool {
     private db:any;
     private locationSchemePOST:any;
     private locationSchemePUT:any;
+    private regex:any;
 
     constructor() {
         this.register.attributes = {
@@ -20,6 +21,7 @@ class Locationpool {
         };
         this.joi = require('joi');
         this.boom = require('boom');
+        this.regex = require('locator-image-utility').regex;
 
         this.initSchema();
     }
@@ -96,6 +98,36 @@ class Locationpool {
                         locationid: this.joi.string().required()
                     }
                 }
+            }
+        });
+
+        server.route({
+            method: 'GET',
+            path: '/locations/{locationid}/{name}.{ext}',
+            config: {
+                auth: false,
+                handler: (request, reply) => {
+                    // create file name
+                    var file = request.params.name + '.' + request.params.ext;
+
+                    // get and reply file stream from database
+                    reply(this.db.getPicture(request.params.locationid, file));
+                },
+                description: 'Get a picture of a location',
+                notes: 'sample call: /locations/1222123132/locationTitle-trip.jpg. The url is found, when a ' +
+                'location is requested with GET /locations/:locationID or GET /users/my/locations',
+                tags: ['api', 'trip'],
+                validate: {
+                    params: {
+                        locationid: this.joi.string()
+                            .required(),
+                        name: this.joi.string()
+                            .required(),
+                        ext: this.joi.string()
+                            .required().regex(this.regex.imageExtension)
+                    }
+                }
+
             }
         });
 
