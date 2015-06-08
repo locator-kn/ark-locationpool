@@ -441,7 +441,7 @@ class Locationpool {
         this.locationSchemePOST = requiredSchema.required().description('JSON object for creating a location');
         this.locationSchemePUT = locationSchema.required().min(1).description('Update location');
 
-        this.imageSchemaPost = this.imageValidation.exportSchema.keys({
+        this.imageSchemaPost = this.imageValidation.basicImageSchema.keys({
             locationTitle: this.joi.string().required()
         });
 
