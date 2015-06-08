@@ -136,9 +136,9 @@ class Locationpool {
                     reply(this.db.getPicture(request.params.locationid, file));
                 },
                 description: 'Get a picture of a location',
-                notes: 'sample call: /locations/1222123132/locationTitle-trip.jpg. The url is found, when a ' +
+                notes: 'sample call: /locations/1222123132/locationTitle-location.jpg. The url is found, when a ' +
                 'location is requested with GET /locations/:locationID or GET /users/my/locations',
-                tags: ['api', 'trip'],
+                tags: ['api', 'location'],
                 validate: {
                     params: {
                         locationid: this.joi.string()
@@ -197,7 +197,7 @@ class Locationpool {
             }
         });
 
-        // update/create the main picture of a trip
+        // update/create the main picture of a location
         server.route({
             method: ['PUT', 'POST'],
             path: '/locations/{locationid}/picture',
@@ -206,7 +206,7 @@ class Locationpool {
                 handler: this.mainPicture,
                 description: 'Update/Change the main picture of a particular location',
                 notes: 'The picture in the database will be updated.',
-                tags: ['api', 'trip'],
+                tags: ['api', 'location'],
                 validate: {
                     params: {
                         locationid: this.joi.string().required()
@@ -218,7 +218,7 @@ class Locationpool {
         });
 
         // DELETE
-        // should this route be provided? delete all trips??
+        // should this route be provided? delete all locations??
         //server.route({
         //    method: 'DELETE',
         //    path: '/users/my/locations',
@@ -268,12 +268,12 @@ class Locationpool {
      * @param reply
      */
     private mainPicture(request:any, reply:any):void {
-        this.isItMyLocation(request.aut.credentials._id, request.params.tripid)
+        this.isItMyLocation(request.aut.credentials._id, request.params.locationid)
             .catch(err => reply(err))
             .then(() => {
                 var name = request.payload.locationTitle + '-location';
                 var stripped = this.imgProcessor.stripHapiRequestObject(request);
-                stripped.options.id = request.params.tripid;
+                stripped.options.id = request.params.locationid;
 
                 this.savePicture(stripped.options, stripped.cropping, name, reply)
             });
@@ -336,7 +336,7 @@ class Locationpool {
     /**
      * Utility method for checking if the given userid belongs to the given locationid
      * @param userid
-     * @param tripid
+     * @param locationid
      * @returns {Promise|Promise<T>}
      */
     private isItMyLocation(userid:string, locationid:string):any {
