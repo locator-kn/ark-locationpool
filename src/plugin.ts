@@ -15,6 +15,9 @@ class Locationpool {
     private locationSchemePUT:any;
     private regex:any;
     private imgProcessor:any;
+    private imageValidation:any;
+    private imageSchemaPost:any;
+
 
     constructor() {
         this.register.attributes = {
@@ -22,8 +25,9 @@ class Locationpool {
         };
         this.joi = require('joi');
         this.boom = require('boom');
-        this.regex = require('locator-image-utility').regex;
         var imageUtil = require('locator-image-utility');
+        this.regex  = imageUtil.regex;
+        this.imageValidation = imageUtil.validation;
         this.imgProcessor = imageUtil.image;
 
         this.initSchema();
@@ -44,6 +48,21 @@ class Locationpool {
 
     private _register(server, options) {
         //register all routes
+
+        // payload for image
+        var imagePayload = {
+            output: 'stream',
+            parse: true,
+            allow: 'multipart/form-data',
+            // TODO: evaluate real value
+            maxBytes: 1048576 * 6 // 6MB
+        };
+
+        var swaggerUpload = {
+            'hapi-swagger': {
+                payloadType: 'form'
+            }
+        };
 
         // GET
         server.route({
@@ -175,6 +194,26 @@ class Locationpool {
                         locationid: this.joi.string().required()
                     }
                 }
+            }
+        });
+
+        // update/create the main picture of a trip
+        server.route({
+            method: ['PUT', 'POST'],
+            path: '/locations/{locationid}/picture',
+            config: {
+                payload: imagePayload,
+                handler: this.mainPicture,
+                description: 'Update/Change the main picture of a particular location',
+                notes: 'The picture in the database will be updated.',
+                tags: ['api', 'trip'],
+                validate: {
+                    params: {
+                        locationid: this.joi.string().required()
+                    },
+                    payload: this.imageSchemaPost
+                },
+                plugins: swaggerUpload
             }
         });
 
@@ -339,7 +378,11 @@ class Locationpool {
         this.locationSchemePUT = this.joi.object().keys({
             title: this.joi.string(),
             description: this.joi.string(),
-        })
+        });
+
+        // TODO: evtl. clone
+        this.imageSchemaPost = this.imageValidation.basicImageSchema;
+        this.imageSchemaPost.locationTitle = this.joi.string().required;
 
     }
 }
