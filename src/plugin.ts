@@ -80,6 +80,23 @@ class Locationpool {
             }
         });
 
+        // GET
+        server.route({
+            method: 'GET',
+            path: '/users/my/preLocations',
+            config: {
+                handler: (request, reply) => {
+                    this.db.getPreLocationsByUserId(request.auth.credentials._id)
+                        .then(value => reply(value))
+                        .catch(err => reply(err));
+                },
+                description: 'Get all preLocation pool of a user. Meaning all locations,' +
+                'which are not ready yet to go public',
+                notes: 'Return a list of all saved  location of a user.',
+                tags: ['api', 'locationpool']
+            }
+        });
+
 
         server.route({
             method: 'GET',
