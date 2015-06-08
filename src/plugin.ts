@@ -360,7 +360,7 @@ class Locationpool {
                 metaData.attachmentData.name = metaData.thumbnailName;
                 return this.db.savePicture(info.id, metaData.attachmentData, thumbnailStream);
             }).then(() => {
-                return this.db.updateDocument(info.id, {images: metaData.imageLocation});
+                return this.db.updateDocumentWithoutCheck(info.id, {images: metaData.imageLocation});
             }).then((value) => {
                 this.replySuccess(reply, metaData.imageLocation, value)
             }).catch((err) => {
@@ -442,7 +442,7 @@ class Locationpool {
 
         // TODO: evtl. clone
         this.imageSchemaPost = this.imageValidation.basicImageSchema;
-        this.imageSchemaPost.locationTitle = this.joi.string().required;
+        this.imageSchemaPost.locationTitle = this.joi.string().required();
 
     }
 }
