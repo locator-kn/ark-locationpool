@@ -46,13 +46,9 @@ class Locationpool {
             path: '/users/my/locations',
             config: {
                 handler: (request, reply) => {
-
-                    this.db.getLocationsByUserId(request.auth.credentials._id, (err, data) => {
-                        if (err) {
-                            return reply(this.boom.wrap(err, 400));
-                        }
-                        reply(data);
-                    });
+                    this.db.getLocationsByUserId(request.auth.credentials._id)
+                        .then(value => reply(value))
+                        .catch(err => reply(err));
                 },
                 description: 'Get the location pool of a user',
                 notes: 'Return a list of all saved  location of a user.',
