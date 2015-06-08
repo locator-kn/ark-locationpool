@@ -26,7 +26,7 @@ class Locationpool {
         this.joi = require('joi');
         this.boom = require('boom');
         var imageUtil = require('locator-image-utility');
-        this.regex  = imageUtil.regex;
+        this.regex = imageUtil.regex;
         this.imageValidation = imageUtil.validation;
         this.imgProcessor = imageUtil.image;
 
@@ -397,23 +397,31 @@ class Locationpool {
      */
     private initSchema():void {
         // basic schema
-        this.locationSchemePOST = this.joi.object().keys({
-            // TODO: better validator, regex???
-            title: this.joi.string().required(),
-            description: this.joi.string().required(),
-            city: this.joi.string().required(),
+        var locationSchema = this.joi.object().keys({
+            title: this.joi.string(),
+            description: this.joi.string(),
+
+            city: this.joi.object().keys({
+                title: this.joi.string().required(),
+                place_id: this.joi.string().required(),
+                id: this.joi.string().required()
+            }),
+
             geotag: this.joi.object().keys({
                 long: this.joi.string(),
                 lat: this.joi.string()
             }),
             budget: this.joi.number(),
             category: this.joi.string(),
+            moods: this.joi.array(),
+            delete: this.joi.boolean().default(false),
         });
 
-        this.locationSchemePUT = this.joi.object().keys({
-            title: this.joi.string(),
-            description: this.joi.string(),
-        });
+        var requiredSchema = locationSchema.requiredKeys('title', 'description', 'city', 'category',
+            'moods');
+
+        this.locationSchemePOST = requiredSchema.required().description('JSON object for creating a location')
+        this.locationSchemePUT = locationSchema.required().min(1).description('Update location')
 
         // TODO: evtl. clone
         this.imageSchemaPost = this.imageValidation.basicImageSchema;
