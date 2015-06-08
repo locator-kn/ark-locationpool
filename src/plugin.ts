@@ -1,3 +1,6 @@
+declare
+var Promise:any;
+
 export interface IRegister {
     (server:any, options:any, next:any): void;
     attributes?: any;
@@ -8,13 +11,12 @@ class Locationpool {
     private joi:any;
     private boom:any;
     private db:any;
-    private locationSchemePUT:any;
     private locationSchemePOST:any;
+    private locationSchemePUT:any;
 
     constructor() {
         this.register.attributes = {
-            name: 'ark-locationpool',
-            version: '0.1.0'
+            pkg: require('./../../package.json')
         };
         this.joi = require('joi');
         this.boom = require('boom');
@@ -41,49 +43,35 @@ class Locationpool {
         // GET
         server.route({
             method: 'GET',
-            path: '/users/{userid}/locations',
+            path: '/users/my/locations',
             config: {
                 handler: (request, reply) => {
-                    //TODO: check if correct user
-                    this.db.getLocationsByUserId(request.params.userid, (err, data) => {
-                        if (err) {
-                            return reply(this.boom.wrap(err, 400));
-                        }
-                        reply(data);
-                    });
+                    this.db.getLocationsByUserId(request.auth.credentials._id)
+                        .then(value => reply(value))
+                        .catch(err => reply(err));
                 },
                 description: 'Get the location pool of a user',
-                notes: 'Return a list of all saved (lightweight) location of a user. Lightweight means that the ' +
-                'pictures are only returned as small thumbnails.',
-                tags: ['api', 'locationpool'],
-                validate: {
-                    params: {
-                        userid: this.joi.string().required()
-                    }
-                }
+                notes: 'Return a list of all saved  location of a user.',
+                tags: ['api', 'locationpool']
             }
         });
 
 
         server.route({
             method: 'GET',
-            path: '/users/{userid}/locations/{locationid}',
+            path: '/users/my/locations/{locationid}',
             config: {
+                auth: false,
                 handler: (request, reply) => {
-                    // TODO: check correct user
-                    this.db.getLocationById(request.params.locationid, (err, data) => {
-                        if (err) {
-                            return reply(this.boom.wrap(err, 400));
-                        }
-                        reply(data);
-                    });
+                    this.db.getgetLocationById(request.params.locationid)
+                        .then(value => reply(value))
+                        .catch(err => reply(err));
                 },
                 description: 'Get a single location of a user',
                 notes: 'Returns a particular saved location of a user.',
                 tags: ['api', 'locationpool'],
                 validate: {
                     params: {
-                        userid: this.joi.string().required(),
                         locationid: this.joi.string().required()
                     }
                 }
@@ -93,26 +81,22 @@ class Locationpool {
         // POST
         server.route({
             method: 'POST',
-            path: '/users/{userid}/locations',
+            path: '/users/my/locations',
             config: {
                 handler: (request, reply) => {
 
-                    // TODO: check if user exist
+                    request.payload.userid = request.auth.credentials._id;
+                    request.payload.type = "location";
 
-                    this.db.createLocation(request.params.userid, request.payload, (err, data) => {
-                        if (err) {
-                            return reply(this.boom.wrap(err, 400));
-                        }
-                        reply(data);
-                    });
+                    this.db.createLocation(request.payload)
+                        .then(value =>  reply({messages: 'success', id: value.id}))
+                        .catch(error =>  reply(this.boom.badRequest(error)));
                 },
-                description: 'Post a single location for a user',
+                description: 'Create a single location for a user',
                 tags: ['api', 'locationpool'],
                 validate: {
-                    payload: this.locationSchemePOST.required().description('Location JSON object'),
-                    params: {
-                        userid: this.joi.string().required()
-                    }
+                    payload: this.locationSchemePOST.required()
+                        .description('Location JSON object')
                 }
             }
         });
@@ -120,24 +104,18 @@ class Locationpool {
         // PUT
         server.route({
             method: 'PUT',
-            path: '/users/{userid}/locations/{locationid}',
+            path: '/users/my/locations/{locationid}',
             config: {
                 handler: (request, reply) => {
-                    // TODO: check if user is authorized to change this location (is it his own location?)
-
-                    this.db.updateLocation(request.payload._id, request.payload._rev, request.payload, (err, data) => {
-                        if (err) {
-                            return reply(this.boom.wrap(err, 400, err.details.message));
-                        }
-                        reply(data);
-                    });
+                    this.db.updateLocation(request.params.locationid, request.auth.credentials._id, request.payload)
+                        .then(value => reply(value))
+                        .catch(err => reply(err));
                 },
                 description: 'Update a single location for a user',
                 tags: ['api', 'locationpool'],
                 validate: {
                     payload: this.locationSchemePUT.required().description('Location JSON object'),
                     params: {
-                        userid: this.joi.string().required(),
                         locationid: this.joi.string().required()
                     }
                 }
@@ -145,50 +123,39 @@ class Locationpool {
         });
 
         // DELETE
-        server.route({
-            method: 'DELETE',
-            path: '/users/{userid}/locations',
-            config: {
-                handler: (request, reply) => {
-                    // TODO: check if user is authorized to delete these locations (are these his own locations?)
-                    this.db.deleteLocationsByUserId(request.params.userid, (err, data) => {
-                        if (err) {
-                            return reply(this.boom.wrap(err, 400));
-                        }
-                        reply(data);
-                    });
-                },
-                description: 'Delete all locations of a user',
-                notes: 'Deletes all locations',
-                tags: ['api', 'locationpool'],
-                validate: {
-                    params: {
-                        userid: this.joi.string().required()
-                    }
-                }
-            }
-        });
+        // should this route be provided? delete all trips??
+        //server.route({
+        //    method: 'DELETE',
+        //    path: '/users/my/locations',
+        //    config: {
+        //        handler: (request, reply) => {
+        //            this.db.deleteLocationsByUserId(request.auth.credentials._id, (err, data) => {
+        //                if (err) {
+        //                    return reply(this.boom.wrap(err, 400));
+        //                }
+        //                reply(data);
+        //            });
+        //        },
+        //        description: 'Delete all locations of a user',
+        //        notes: 'Deletes all locations',
+        //        tags: ['api', 'locationpool']
+        //    }
+        //});
 
         server.route({
             method: 'DELETE',
-            path: '/users/{userid}/locations/{locationid}',
+            path: '/users/my/locations/{locationid}',
             config: {
                 handler: (request, reply) => {
-
-                    // TODO: check if user is authorized to delete this location (is it his own location?)
-                    this.db.deleteLocationById(request.params.locationid, (err, data) => {
-                        if (err) {
-                            return reply(this.boom.wrap(err, 400));
-                        }
-                        reply(data);
-                    });
+                    this.db.deleteLocationById(request.params.locationid, request.auth.credentials._id)
+                        .then(value => reply(value))
+                        .catch(err => reply(err));
                 },
                 description: 'Delete a single location of a user',
                 notes: 'Deletes a particular saved location of a user.',
                 tags: ['api', 'locationpool'],
                 validate: {
                     params: {
-                        userid: this.joi.string().required(),
                         locationid: this.joi.string().required()
                     }
                 }
@@ -214,15 +181,13 @@ class Locationpool {
                 lat: this.joi.string()
             }),
             budget: this.joi.number(),
-            pics: this.joi.array(), // TODO: could be better?
             category: this.joi.string(),
-            type: this.joi.string().required().only('location')
         });
 
-        this.locationSchemePUT = this.locationSchemePOST
-            .concat(this.joi.object().keys({
-                _id: this.joi.string().required(),
-                _rev: this.joi.string().required()
-            }));
+        this.locationSchemePUT = this.joi.object().keys({
+            title: this.joi.strig(),
+            description: this.joi.string(),
+        })
 
-    }}
+    }
+}
