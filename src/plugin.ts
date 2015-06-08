@@ -314,13 +314,14 @@ class Locationpool {
 
     private createLocationWithImage(request, reply) {
         // create an empty "preLocation" before uploading a picture
-        this.db.createLocation({type: "preLocation"}, (err, data) => {
+        var userid = request.auth.credentials._id;
+        this.db.createLocation({type: "preLocation", userid: userid}, (err, data) => {
             if (err) {
                 return reply(this.boom.badRequest(err));
             }
 
             // get user id from authentication credentials
-            request.payload.userid = request.auth.credentials._id;
+            request.payload.userid = userid;
 
             var stripped = this.imgProcessor.stripHapiRequestObject(request);
             stripped.options.id = data.id;
@@ -440,9 +441,9 @@ class Locationpool {
         this.locationSchemePOST = requiredSchema.required().description('JSON object for creating a location');
         this.locationSchemePUT = locationSchema.required().min(1).description('Update location');
 
-        // TODO: evtl. clone
-        this.imageSchemaPost = this.imageValidation.basicImageSchema;
-        this.imageSchemaPost.locationTitle = this.joi.string().required();
+        this.imageSchemaPost = this.imageValidation.exportSchema.keys({
+            locationTitle: this.joi.string().required()
+        });
 
     }
 }
