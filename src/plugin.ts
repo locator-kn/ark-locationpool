@@ -428,7 +428,7 @@ class Locationpool {
                 long: this.joi.string(),
                 lat: this.joi.string()
             }),
-            budget: this.joi.number(),
+            budget: this.joi.string(),
             category: this.joi.string(),
             moods: this.joi.array(),
             delete: this.joi.boolean().default(false),
@@ -437,8 +437,8 @@ class Locationpool {
         var requiredSchema = locationSchema.requiredKeys('title', 'description', 'city', 'category',
             'moods');
 
-        this.locationSchemePOST = requiredSchema.required().description('JSON object for creating a location')
-        this.locationSchemePUT = locationSchema.required().min(1).description('Update location')
+        this.locationSchemePOST = requiredSchema.required().description('JSON object for creating a location');
+        this.locationSchemePUT = locationSchema.required().min(1).description('Update location');
 
         // TODO: evtl. clone
         this.imageSchemaPost = this.imageValidation.basicImageSchema;
