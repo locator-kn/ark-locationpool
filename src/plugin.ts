@@ -176,6 +176,22 @@ class Locationpool {
             }
         });
 
+        // create a new location with form data
+        server.route({
+            method: 'POST',
+            path: '/users/my/locations/picture',
+            config: {
+                payload: imagePayload,
+                handler: this.createLocationWithImage,
+                description: 'Creates a new location with form data. Used when a picture is uploaded first',
+                tags: ['api', 'location'],
+                validate: {
+                    payload: this.imageSchemaPost
+                },
+                plugins: swaggerUpload
+            }
+
+        });
         // PUT
         server.route({
             method: 'PUT',
@@ -277,6 +293,25 @@ class Locationpool {
 
                 this.savePicture(stripped.options, stripped.cropping, name, reply)
             });
+    }
+
+    private createLocationWithImage(request, reply) {
+        // create an empty "preLocation" before uploading a picture
+        this.db.createLocation({type: "preLocation"}, (err, data) => {
+            if (err) {
+                return reply(this.boom.badRequest(err));
+            }
+
+            // get user id from authentication credentials
+            request.payload.userid = request.auth.credentials._id;
+
+            var stripped = this.imgProcessor.stripHapiRequestObject(request);
+            stripped.options.id = data.id;
+            name = request.payload.locationTitle + '-location';
+
+            // save picture to the just created document
+            this.savePicture(stripped.options, stripped.cropping, name, reply)
+        });
     }
 
     /**
