@@ -67,6 +67,27 @@ class Locationpool {
                         .then(value => reply(value))
                         .catch(err => reply(err));
                 },
+                description: 'Get a single location of a user. Convenience route: Same as calling /locations/:locationId',
+                notes: 'Returns a particular saved location of a user.',
+                tags: ['api', 'locationpool'],
+                validate: {
+                    params: {
+                        locationid: this.joi.string().required()
+                    }
+                }
+            }
+        });
+
+        server.route({
+            method: 'GET',
+            path: '/locations/{locationid}',
+            config: {
+                auth: false,
+                handler: (request, reply) => {
+                    this.db.getgetLocationById(request.params.locationid)
+                        .then(value => reply(value))
+                        .catch(err => reply(err));
+                },
                 description: 'Get a single location of a user',
                 notes: 'Returns a particular saved location of a user.',
                 tags: ['api', 'locationpool'],
@@ -111,7 +132,7 @@ class Locationpool {
                         .then(value => reply(value))
                         .catch(err => reply(err));
                 },
-                description: 'Update a single location for a user',
+                description: 'Update a single location of a user',
                 tags: ['api', 'locationpool'],
                 validate: {
                     payload: this.locationSchemePUT.required().description('Location JSON object'),
