@@ -220,6 +220,30 @@ class Locationpool {
     }
 
     /**
+     * Utility method for checking if the given userid belongs to the given locationid
+     * @param userid
+     * @param tripid
+     * @returns {Promise|Promise<T>}
+     */
+    private isItMyLocation(userid:string, locationid:string):any {
+        return new Promise((reject, resolve) => {
+
+            this.db.getLocationById(locationid, (err, data) => {
+
+                if (err) {
+                    return reject(this.boom.badRequest(err));
+                }
+
+                if (!data.userid || data.userid !== userid) {
+                    return reject(this.boom.forbidden());
+                }
+
+                return resolve(data);
+            });
+        });
+    }
+
+    /**
      * Create validation schema for location.
      */
     private initSchema():void {
