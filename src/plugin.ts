@@ -213,11 +213,4 @@ class Locationpool {
             });
         });
     }
-
-    private notAuthorized(err:any, reply:any):void {
-        if (err) {
-            return reply(this.boom.create(400, err));
-        }
-        return reply(this.boom.create(403, "Not Authorized"));
-    }
 }
