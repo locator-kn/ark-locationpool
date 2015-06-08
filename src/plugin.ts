@@ -222,6 +222,24 @@ class Locationpool {
         return 'register';
     }
 
+
+    /**
+     * Method for saving the main picture of a location
+     * @param request
+     * @param reply
+     */
+    private mainPicture(request:any, reply:any):void {
+        this.isItMyLocation(request.aut.credentials._id, request.params.tripid)
+            .catch(err => reply(err))
+            .then(() => {
+                var name = request.payload.locationTitle + '-location';
+                var stripped = this.imgProcessor.stripHapiRequestObject(request);
+                stripped.options.id = request.params.tripid;
+
+                this.savePicture(stripped.options, stripped.cropping, name, reply)
+            });
+    }
+
     /**
      * Save picture.
      *
