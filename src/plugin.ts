@@ -185,7 +185,7 @@ class Locationpool {
         });
 
         this.locationSchemePUT = this.joi.object().keys({
-            title: this.joi.strig(),
+            title: this.joi.string(),
             description: this.joi.string(),
         })
 
