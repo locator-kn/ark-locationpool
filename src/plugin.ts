@@ -14,6 +14,7 @@ class Locationpool {
     private locationSchemePOST:any;
     private locationSchemePUT:any;
     private regex:any;
+    private imgProcessor:any;
 
     constructor() {
         this.register.attributes = {
@@ -22,6 +23,8 @@ class Locationpool {
         this.joi = require('joi');
         this.boom = require('boom');
         this.regex = require('locator-image-utility').regex;
+        var imageUtil = require('locator-image-utility');
+        this.imgProcessor = imageUtil.image;
 
         this.initSchema();
     }
@@ -218,6 +221,60 @@ class Locationpool {
         // Register
         return 'register';
     }
+
+    /**
+     * Save picture.
+     *
+     * @param info
+     * @param cropping
+     * @param name
+     * @param reply
+     */
+    private savePicture(info:any, cropping:any, name:string, reply:any):void {
+
+        // create object for processing images
+        var imageProcessor = this.imgProcessor.processor(info);
+        if (imageProcessor.error) {
+            console.log(imageProcessor);
+            return reply(this.boom.badRequest(imageProcessor.error))
+        }
+
+        // get info needed for output or database
+        var metaData = imageProcessor.createFileInformation(name);
+
+        // create a read stream and crop it
+        var readStream = imageProcessor.createCroppedStream(cropping, {x: 1500, y: 675});  // TODO: size needs to be discussed
+        var thumbnailStream = imageProcessor.createCroppedStream(cropping, {x: 120, y: 120});
+
+        this.db.savePicture(info.id, metaData.attachmentData, readStream)
+            .then(() => {
+                metaData.attachmentData.name = metaData.thumbnailName;
+                return this.db.savePicture(info.id, metaData.attachmentData, thumbnailStream);
+            }).then(() => {
+                return this.db.updateDocument(info.id, {images: metaData.imageLocation});
+            }).then((value) => {
+                this.replySuccess(reply, metaData.imageLocation, value)
+            }).catch((err) => {
+                return reply(err);
+            });
+
+    }
+
+    /**
+     * reply a success message for uploading a picture.
+     *
+     * @param reply
+     * @param imageLocation
+     */
+    private replySuccess = (reply, imageLocation, dbresponse) => {
+        reply({
+            message: 'ok',
+            imageLocation: imageLocation,
+            id: dbresponse.id,
+            rev: dbresponse.rev
+        });
+    };
+
 
     /**
      * Utility method for checking if the given userid belongs to the given locationid
