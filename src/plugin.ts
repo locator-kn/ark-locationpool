@@ -65,8 +65,9 @@ class Locationpool {
             method: 'GET',
             path: '/users/my/locations/{locationid}',
             config: {
+                auth: false,
                 handler: (request, reply) => {
-                    this.isItMyLocation(request.auth.credentials._id, request.params.locationid)
+                    this.db.getgetLocationById(request.params.locationid)
                         .then(value => reply(value))
                         .catch(err => reply(err));
                 },
@@ -192,25 +193,5 @@ class Locationpool {
             description: this.joi.string(),
         })
 
-    }
-
-    private isItMyLocation(userid:string, locationid:string):Promise {
-
-        return new Promise((reject, resolve) => {
-            // first, get the location
-            this.db.getLocationById(locationid, (err, data) => {
-
-                if (err) {
-                    return reject(this.boom.badRequest(err));
-                }
-
-                // check if the returned location belongs to this user
-                if (data.userid !== userid) {
-                    return reject(this.boom.forbidden());
-                }
-
-                return resolve(data);
-            });
-        });
     }
 }
