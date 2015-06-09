@@ -69,12 +69,6 @@ lab.before(function (done) {
 // test the GET request for a location pool
 lab.experiment('Locationpool Plugin GET location', function () {
 
-    // function to be called before each test
-    lab.beforeEach(function (done) {
-
-        done();
-    });
-
     test('it creates a new location for my locationpool', function (done) {
         createTestLocation(function (response) {
             // test
@@ -82,6 +76,7 @@ lab.experiment('Locationpool Plugin GET location', function () {
 
             // rollback
             deleteTestLocation(response.result.id, function (response) {
+                // test rollback
                 expect(response.statusCode).to.equal(200);
                 done();
             });
@@ -89,10 +84,25 @@ lab.experiment('Locationpool Plugin GET location', function () {
     });
 
 
-    test('it returns an error when find by user id misses', function (done) {
-        //TODO
-        done();
+    test('it gets a location of my location pool, which is previously created', function (done) {
+        createTestLocation(function (response) {
+            // test
+            expect(response.statusCode).to.equal(200);
+
+            getMyLocationById(response.result.id, function (response) {
+                expect(response.statusCode).to.equal(200);
+
+                // rollback
+                deleteTestLocation(response.result._id, function (response) {
+                    // test rollback
+                    expect(response.statusCode).to.equal(200);
+                    done();
+                });
+            })
+
+        });
     });
+
 
     test('it returns an error when find by location id misses', function (done) {
         //TODO
@@ -136,4 +146,19 @@ function createTestLocation(callback) {
             moods: ['TestMood']
         }
     }, callback)
+}
+
+function getMyLocationById(id, callback) {
+    server.inject({
+        method: 'GET',
+        url: '/api/v1/users/my/locations/' + id
+    }, callback);
+}
+
+
+function getLocationById(id, callback) {
+    server.inject({
+        method: 'GET',
+        url: '/api/v1/locations/' + id
+    }, callback);
 }
