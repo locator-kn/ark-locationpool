@@ -18,7 +18,7 @@ var lab = exports.lab = Lab.script();
 var expect = Code.expect;
 var test = lab.test;
 
-var request, server, locationpool;
+var id, server, locationpool;
 
 // set up the whole test
 lab.before(function (done) {
@@ -52,61 +52,66 @@ lab.before(function (done) {
         if (err) {
             return done(err);
         }
+
+        // TODO set up database with needed design documents
+
+        console.log('Set up complete');
+        server.on('request-error', function (arg, err) {
+            console.log('Error response (500) sent for request: ' + arg.id + ' because:\n' + err);
+        });
+
+        // start server and end set up
+        server.start();
         done();
     });
-
-    // TODO set up database with needed design documents
-
-    console.log('Set up complete');
-    server.on('request-error', function (arg, err) {
-        console.log('Error response (500) sent for request: ' + arg.id + ' because:\n' + err);
-    });
-    server.start();
-
 
 });
 
 // test the GET request for a location pool
-lab.experiment('Locationpool Plugin GET location', function () {
+lab.experiment('Locationpool Plugin creates a Location and : ', function () {
 
-    test('it creates a new location for my locationpool', function (done) {
+    lab.beforeEach(function (done) {
         createTestLocation(function (response) {
+
+            id = response.result.id;
             // test
             expect(response.statusCode).to.equal(200);
+            done();
+        });
+    });
 
-            // rollback
-            deleteTestLocation(response.result.id, function (response) {
-                // test rollback
-                expect(response.statusCode).to.equal(200);
-                done();
-            });
+    lab.afterEach(function (done) {
+        // rollback
+        deleteTestLocation(id, function (response) {
+
+            expect(response.statusCode).to.equal(200);
+            done();
         });
     });
 
 
-    test('it gets a location of my location pool, which is previously created', function (done) {
-        createTestLocation(function (response) {
-            // test
+    test('it gets a location of my location pool', function (done) {
+
+        getMyLocationById(id, function (response) {
+
             expect(response.statusCode).to.equal(200);
-
-            getMyLocationById(response.result.id, function (response) {
-                expect(response.statusCode).to.equal(200);
-
-                // rollback
-                deleteTestLocation(response.result._id, function (response) {
-                    // test rollback
-                    expect(response.statusCode).to.equal(200);
-                    done();
-                });
-            })
-
+            done();
         });
     });
 
     test('it deletes a location, which is not present', function (done) {
         deleteTestLocation('NOT_VALID_ID', function (response) {
+
             expect(response.result.statusCode).to.be.equal(400);
             expect(response.result.message).to.be.equal('CouchError: not_found: missing');
+            done();
+        })
+    });
+
+    test('it updates a location successfully', function (done) {
+        updateTestLocation(id, function (res) {
+
+            expect(res.statusCode).to.be.equal(200);
             done();
         })
     });
@@ -129,6 +134,11 @@ lab.experiment('Locationpool Plugin GET location', function () {
 
 });
 
+lab.after(function (done) {
+    console.log('Test complete');
+    done();
+});
+
 function deleteTestLocation(id, callback) {
     server.inject({
         method: 'DELETE',
@@ -140,6 +150,26 @@ function createTestLocation(callback) {
     server.inject({
         method: 'POST',
         url: '/api/v1/users/my/locations',
+        payload: {
+            title: 'testLocation',
+            description: 'testLocationDescription',
+
+            city: {
+                title: 'Konstanz',
+                place_id: 'ChIJWx8MOBv2mkcR0JnfpbdrHwQ',
+                id: '58433437e7710a957cd798b0774a79385389035b'
+            },
+
+            category: 'Bar',
+            moods: ['TestMood']
+        }
+    }, callback)
+}
+
+function updateTestLocation(id, callback) {
+    server.inject({
+        method: 'PUT',
+        url: '/api/v1/users/my/locations/' + id,
         payload: {
             title: 'testLocation',
             description: 'testLocationDescription',

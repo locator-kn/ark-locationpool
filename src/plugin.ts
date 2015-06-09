@@ -209,6 +209,7 @@ class Locationpool {
             }
 
         });
+
         // PUT
         server.route({
             method: 'PUT',
