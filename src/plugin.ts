@@ -432,7 +432,7 @@ class Locationpool {
             budget: this.joi.string(),
             category: this.joi.string(),
             moods: this.joi.array(),
-            delete: this.joi.boolean().default(false),
+            delete: this.joi.boolean().default(false)
         });
 
         var requiredSchema = locationSchema.requiredKeys('title', 'description', 'city', 'category',

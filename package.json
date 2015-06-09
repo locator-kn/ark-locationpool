@@ -11,6 +11,10 @@
   "peerDependencies": {
     "hapi": ">=8.x.x"
   },
+  "scripts": {
+    "test": "lab -t 100",
+    "test-cov-html": "lab -r html -o coverage.html"
+  },
   "devDependencies": {
     "code": "1.x.x",
     "gulp": "^3.8.11",
@@ -23,12 +27,13 @@
     "gulp-tsc": "^0.9.3",
     "gulp-typescript": "^2.5.0",
     "merge2": "^0.3.1",
-    "node-notifier": "^4.1.2"
+    "node-notifier": "^4.1.2",
+    "ark-database": "latest"
   },
   "dependencies": {
     "boom": "^2.7.1",
     "joi": "^6.2.0",
-    "locator-image-utility": "^2.0.2",
+    "locator-image-utility": "latest",
     "sinon": "^1.14.1",
     "typescript": "^1.5.0-alpha"
   }

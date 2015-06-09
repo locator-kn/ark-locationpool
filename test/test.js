@@ -2,16 +2,13 @@
 var Code = require('code');
 var Hapi = require('hapi');
 var Lab = require('lab');
-var sinon = require('sinon');
 
 // home made plugins
 var Locationpool = require('../index');
-var Database = require('backend-database');
+var Database = require('ark-database');
 
 // Test shortcuts
 var lab = exports.lab = Lab.script();
-var describe = lab.describe;
-var it = lab.it;
 var expect = Code.expect;
 var test = lab.test;
 
@@ -20,26 +17,45 @@ var request, server, locationpool, database;
 // set up the whole test
 lab.before(function (done) {
 
+    var opt = {
+        routes: {
+            prefix: '/api/v1'
+        }
+    };
+
     // set up server
     server = new Hapi.Server();
     server.connection({host: 'localhost', port: 3030});
 
-    locationpool = new Locationpool();
-    database = sinon.mock(new Database());
-    console.log("woop");
-    //
-    //sinon.stub(database.location, 'getLocationById', function (callback) {
-    //    return '';
-    //});
+    // set up authentication
+    server.auth.scheme('test', function (request, reply) {
+        return {
+            authenticate: function (request, reply) {
+                return reply.continue({credentials: {_id: 'test'}});
+            }
+        }
+    });
+    server.auth.strategy('default', 'test');
+    server.auth.default('default');
 
-    // register needed plugins
-    var plugins = [locationpool, database];
-    server.register(plugins, function (err) {
+    // register needed plugin
+    var plugins = [new Database('test'), new Locationpool()];
+    server.register(plugins, opt, function (err) {
         if (err) {
             return done(err);
         }
         done();
     });
+
+    // TODO set up database with needed design documents
+
+    console.log('Set up complete');
+    server.on('request-error', function(arg,err) {
+        console.log('Error response (500) sent for request: ' + arg.id + ' because:\n' + err);
+    });
+    server.start();
+
+
 });
 
 // test the GET request for a location pool
@@ -50,8 +66,7 @@ lab.experiment('Locationpool Plugin GET location', function () {
 
         request = {
             method: 'GET',
-            url: '/user/4386558346954769843/locations/98534650973650'
-            //credentials: AuthenticatedUser
+            url: '/api/v1/users/my/locations'
         };
         done();
     });
@@ -61,7 +76,8 @@ lab.experiment('Locationpool Plugin GET location', function () {
 
         // send the request to the server
         server.inject(request, function (response) {
-            expect(response.statusCode).to.equal(404);
+           // console.log(arguments)
+            expect(response.statusCode).to.equal(200);
             done();
         });
     });
@@ -86,20 +102,4 @@ lab.experiment('Locationpool Plugin GET location', function () {
         done();
     });
 
-});
-
-
-describe('Plugin', function () {
-    it('should work', function (done) {
-        var server = new Hapi.Server();
-        var plugin = new Plugin();
-        server.connection({host: 'localhost', port: 80});
-
-        server.register(plugin, function (err) {
-            expect(err).to.not.exist();
-            expect(plugin._register).to.be.a.function();
-            expect(plugin._register()).to.be.a.string();
-            done();
-        });
-    });
 });
