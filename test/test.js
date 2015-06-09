@@ -7,6 +7,12 @@ var Lab = require('lab');
 var Locationpool = require('../index');
 var Database = require('ark-database');
 
+// testing environment
+var testDbeName = 'test';
+var testEnv = require('./../env.json');
+var testDbURL = 'http://locator.in.htwg-konstanz.de';
+var testDbPort = 5984;
+
 // Test shortcuts
 var lab = exports.lab = Lab.script();
 var expect = Code.expect;
@@ -38,8 +44,10 @@ lab.before(function (done) {
     server.auth.strategy('default', 'test');
     server.auth.default('default');
 
+    // set up database with test params
+    var db = new Database(testDbeName, testEnv.db, testDbURL, testDbPort)
     // register needed plugin
-    var plugins = [new Database('test'), new Locationpool()];
+    var plugins = [db, new Locationpool()];
     server.register(plugins, opt, function (err) {
         if (err) {
             return done(err);
@@ -50,7 +58,7 @@ lab.before(function (done) {
     // TODO set up database with needed design documents
 
     console.log('Set up complete');
-    server.on('request-error', function(arg,err) {
+    server.on('request-error', function (arg, err) {
         console.log('Error response (500) sent for request: ' + arg.id + ' because:\n' + err);
     });
     server.start();
