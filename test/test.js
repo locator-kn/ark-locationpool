@@ -71,6 +71,7 @@ lab.before(function (done) {
 lab.experiment('Locationpool Plugin creates a Location and', function () {
 
     lab.beforeEach(function (done) {
+
         createTestLocation(function (response) {
 
             // set global id for other test cases
@@ -81,6 +82,7 @@ lab.experiment('Locationpool Plugin creates a Location and', function () {
     });
 
     lab.afterEach(function (done) {
+
         // rollback
         deleteTestLocation(id, function (response) {
 
@@ -109,6 +111,7 @@ lab.experiment('Locationpool Plugin creates a Location and', function () {
     });
 
     test('it deletes a location, which is not present', function (done) {
+
         deleteTestLocation('NOT_VALID_ID', function (response) {
 
             expect(response.result.statusCode).to.be.equal(400);
@@ -118,6 +121,7 @@ lab.experiment('Locationpool Plugin creates a Location and', function () {
     });
 
     test('it updates a location successfully', function (done) {
+
         updateTestLocation(id, function (res) {
 
             expect(res.statusCode).to.be.equal(200);
@@ -127,23 +131,36 @@ lab.experiment('Locationpool Plugin creates a Location and', function () {
 
 
     test('it updates a not present location', function (done) {
+
         updateTestLocation('NOT_PRESENT', function (res) {
 
             expect(res.statusCode).to.be.equal(400);
             done();
         })
     });
+});
 
-    test('it returns a not found when find by location id misses', function (done) {
-        //TODO
-        done();
+// test the GET request for a location pool
+lab.experiment('Locationpool Plugin creates a PreLocation with image and', function () {
+
+    lab.beforeEach(function (done) {
+        createTestLocation(function (response) {
+
+            // set global id for other test cases
+            id = response.result.id;
+            expect(response.statusCode).to.equal(200);
+            done();
+        });
     });
 
-    test('it returns a document successfully', function (done) {
-        //TODO
-        done();
-    });
+    lab.afterEach(function (done) {
+        // rollback
+        deleteTestLocation(id, function (response) {
 
+            expect(response.statusCode).to.equal(200);
+            done();
+        });
+    });
 });
 
 lab.after(function (done) {
