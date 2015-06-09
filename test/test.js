@@ -68,13 +68,13 @@ lab.before(function (done) {
 });
 
 // test the GET request for a location pool
-lab.experiment('Locationpool Plugin creates a Location and : ', function () {
+lab.experiment('Locationpool Plugin creates a Location and', function () {
 
     lab.beforeEach(function (done) {
         createTestLocation(function (response) {
 
+            // set global id for other test cases
             id = response.result.id;
-            // test
             expect(response.statusCode).to.equal(200);
             done();
         });
@@ -99,6 +99,15 @@ lab.experiment('Locationpool Plugin creates a Location and : ', function () {
         });
     });
 
+    test('it gets a all of my locations', function (done) {
+
+        getMyLocations(function (response) {
+
+            expect(response.statusCode).to.equal(200);
+            done();
+        });
+    });
+
     test('it deletes a location, which is not present', function (done) {
         deleteTestLocation('NOT_VALID_ID', function (response) {
 
@@ -117,9 +126,12 @@ lab.experiment('Locationpool Plugin creates a Location and : ', function () {
     });
 
 
-    test('it returns an error when find by location id misses', function (done) {
-        //TODO
-        done();
+    test('it updates a not present location', function (done) {
+        updateTestLocation('NOT_PRESENT', function (res) {
+
+            expect(res.statusCode).to.be.equal(400);
+            done();
+        })
     });
 
     test('it returns a not found when find by location id misses', function (done) {
@@ -139,6 +151,7 @@ lab.after(function (done) {
     done();
 });
 
+// function for testing
 function deleteTestLocation(id, callback) {
     server.inject({
         method: 'DELETE',
@@ -193,6 +206,12 @@ function getMyLocationById(id, callback) {
     }, callback);
 }
 
+function getMyLocations(callback) {
+    server.inject({
+        method: 'GET',
+        url: '/api/v1/users/my/locations'
+    }, callback);
+}
 
 function getLocationById(id, callback) {
     server.inject({
