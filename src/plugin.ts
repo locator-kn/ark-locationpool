@@ -182,7 +182,7 @@ class Locationpool {
 
                     this.db.createLocation(request.payload)
                         .then(value =>  reply({messages: 'success', id: value.id}))
-                        .catch(error =>  reply(this.boom.badRequest(error)));
+                        .catch(error =>  reply(error));
                 },
                 description: 'Create a single location for a user',
                 tags: ['api', 'locationpool'],
