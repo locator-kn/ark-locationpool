@@ -433,8 +433,8 @@ class Locationpool {
             }),
 
             geotag: this.joi.object().keys({
-                long: this.joi.string(),
-                lat: this.joi.string()
+                long: this.joi.number().required(),
+                lat: this.joi.number().required()
             }),
             budget: this.joi.string(),
             category: this.joi.string(),
