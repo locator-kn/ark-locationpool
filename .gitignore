@@ -5,3 +5,4 @@ lib/
 coverage.html
 typings
 *.log
+env.json
