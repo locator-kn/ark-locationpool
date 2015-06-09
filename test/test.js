@@ -97,6 +97,9 @@ lab.experiment('Locationpool Plugin GET location', function () {
                 expect(response.statusCode).to.equal(200);
 
                 // rollback
+                deleteTestLocation(response.result.id, done);
+            }
+        );
     });
 
     test('it returns an error when find by user id misses', function (done) {
@@ -120,4 +123,14 @@ lab.experiment('Locationpool Plugin GET location', function () {
     });
 
 });
+
+function deleteTestLocation(id, done) {
+    server.inject({
+            method: 'DELETE',
+            url: '/api/v1/users/my/locations/' + id
+        },
+        function (response) {
+            expect(response.statusCode).to.equal(200);
+            done();
+        })
 }
