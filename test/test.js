@@ -18,7 +18,7 @@ var lab = exports.lab = Lab.script();
 var expect = Code.expect;
 var test = lab.test;
 
-var request, server, locationpool, database;
+var request, server, locationpool;
 
 // set up the whole test
 lab.before(function (done) {
@@ -45,7 +45,7 @@ lab.before(function (done) {
     server.auth.default('default');
 
     // set up database with test params
-    var db = new Database(testDbeName, testEnv.db, testDbURL, testDbPort)
+    var db = new Database(testDbeName, testEnv.db, testDbURL, testDbPort);
     // register needed plugin
     var plugins = [db, new Locationpool()];
     server.register(plugins, opt, function (err) {
@@ -72,22 +72,31 @@ lab.experiment('Locationpool Plugin GET location', function () {
     // function to be called before each test
     lab.beforeEach(function (done) {
 
-        request = {
-            method: 'GET',
-            url: '/api/v1/users/my/locations'
-        };
         done();
     });
 
-    test('it returns a not found when find by user id misses', function (done) {
+    test('it creates a new location for my locationpool', function (done) {
+        server.inject({
+                method: 'POST',
+                url: '/api/v1/users/my/locations',
+                payload: {
+                    title: 'testLocation',
+                    description: 'testLocationDescription',
 
+                    city: {
+                        title: 'Konstanz',
+                        place_id: 'ChIJWx8MOBv2mkcR0JnfpbdrHwQ',
+                        id: '58433437e7710a957cd798b0774a79385389035b'
+                    },
 
-        // send the request to the server
-        server.inject(request, function (response) {
-           // console.log(arguments)
-            expect(response.statusCode).to.equal(200);
-            done();
-        });
+                    category: 'Bar',
+                    moods: ['TestMood']
+                }
+            },
+            function (response) {
+                expect(response.statusCode).to.equal(200);
+
+                // rollback
     });
 
     test('it returns an error when find by user id misses', function (done) {
@@ -111,3 +120,4 @@ lab.experiment('Locationpool Plugin GET location', function () {
     });
 
 });
+}
