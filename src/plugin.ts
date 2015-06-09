@@ -216,6 +216,9 @@ class Locationpool {
             path: '/users/my/locations/{locationid}',
             config: {
                 handler: (request, reply) => {
+                    // Potential Bug. For now we are certain that the frontend will provide enough data to
+                    // convert this preLocation into a real one
+                    request.payload.preLocation = false;
                     this.db.updateLocation(request.params.locationid, request.auth.credentials._id, request.payload)
                         .then(value => reply(value))
                         .catch(err => reply(err));
@@ -316,10 +319,12 @@ class Locationpool {
     private createLocationWithImage(request, reply) {
         // create an empty "preLocation" before uploading a picture
         var userid = request.auth.credentials._id;
-        this.db.createLocation({type: "preLocation", userid: userid}, (err, data) => {
-            if (err) {
-                return reply(this.boom.badRequest(err));
-            }
+        var preLocation = {
+            type: 'location',
+            userid: userid,
+            preLocation: true
+        };
+        this.db.createLocation(preLocation).then(data => {
 
             // get user id from authentication credentials
             request.payload.userid = userid;
@@ -330,7 +335,8 @@ class Locationpool {
 
             // save picture to the just created document
             this.savePicture(stripped.options, stripped.cropping, name, reply)
-        });
+
+        }).catch(err => reply(err));
     }
 
     /**
