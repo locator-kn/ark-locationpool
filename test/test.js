@@ -39,13 +39,7 @@ lab.before(function (done) {
     server.auth.default('default');
 
     // register needed plugin
-    var db = new Database(
-        'test',
-        {"COUCH_USERNAME": "locator_root","COUCH_PASSWORD": "!HApr$crUn&C4ep_UWaZ8B-A"},
-        'http://locator.in.htwg-konstanz.de',
-        5984);
-
-    var plugins = [db, new Locationpool()];
+    var plugins = [new Database('test'), new Locationpool()];
     server.register(plugins, opt, function (err) {
         if (err) {
             return done(err);
@@ -56,7 +50,7 @@ lab.before(function (done) {
     // TODO set up database with needed design documents
 
     console.log('Set up complete');
-    server.on('request-error', function (arg, err) {
+    server.on('request-error', function(arg,err) {
         console.log('Error response (500) sent for request: ' + arg.id + ' because:\n' + err);
     });
     server.start();
@@ -78,8 +72,11 @@ lab.experiment('Locationpool Plugin GET location', function () {
     });
 
     test('it returns a not found when find by user id misses', function (done) {
+
+
         // send the request to the server
         server.inject(request, function (response) {
+           // console.log(arguments)
             expect(response.statusCode).to.equal(200);
             done();
         });
