@@ -103,6 +103,14 @@ lab.experiment('Locationpool Plugin GET location', function () {
         });
     });
 
+    test('it deletes a location, which is not present', function (done) {
+        deleteTestLocation('NOT_VALID_ID', function (response) {
+            expect(response.result.statusCode).to.be.equal(400);
+            expect(response.result.message).to.be.equal('CouchError: not_found: missing');
+            done();
+        })
+    });
+
 
     test('it returns an error when find by location id misses', function (done) {
         //TODO
