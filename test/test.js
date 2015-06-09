@@ -76,31 +76,18 @@ lab.experiment('Locationpool Plugin GET location', function () {
     });
 
     test('it creates a new location for my locationpool', function (done) {
-        server.inject({
-                method: 'POST',
-                url: '/api/v1/users/my/locations',
-                payload: {
-                    title: 'testLocation',
-                    description: 'testLocationDescription',
+        createTestLocation(function (response) {
+            // test
+            expect(response.statusCode).to.equal(200);
 
-                    city: {
-                        title: 'Konstanz',
-                        place_id: 'ChIJWx8MOBv2mkcR0JnfpbdrHwQ',
-                        id: '58433437e7710a957cd798b0774a79385389035b'
-                    },
-
-                    category: 'Bar',
-                    moods: ['TestMood']
-                }
-            },
-            function (response) {
+            // rollback
+            deleteTestLocation(response.result.id, function (response) {
                 expect(response.statusCode).to.equal(200);
-
-                // rollback
-                deleteTestLocation(response.result.id, done);
-            }
-        );
+                done();
+            });
+        });
     });
+
 
     test('it returns an error when find by user id misses', function (done) {
         //TODO
@@ -124,13 +111,29 @@ lab.experiment('Locationpool Plugin GET location', function () {
 
 });
 
-function deleteTestLocation(id, done) {
+function deleteTestLocation(id, callback) {
     server.inject({
-            method: 'DELETE',
-            url: '/api/v1/users/my/locations/' + id
-        },
-        function (response) {
-            expect(response.statusCode).to.equal(200);
-            done();
-        })
+        method: 'DELETE',
+        url: '/api/v1/users/my/locations/' + id
+    }, callback)
+}
+
+function createTestLocation(callback) {
+    server.inject({
+        method: 'POST',
+        url: '/api/v1/users/my/locations',
+        payload: {
+            title: 'testLocation',
+            description: 'testLocationDescription',
+
+            city: {
+                title: 'Konstanz',
+                place_id: 'ChIJWx8MOBv2mkcR0JnfpbdrHwQ',
+                id: '58433437e7710a957cd798b0774a79385389035b'
+            },
+
+            category: 'Bar',
+            moods: ['TestMood']
+        }
+    }, callback)
 }
