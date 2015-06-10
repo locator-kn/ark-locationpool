@@ -2,6 +2,7 @@
 var Code = require('code');
 var Hapi = require('hapi');
 var Lab = require('lab');
+var Boom = require('boom');
 
 // home made plugins
 var Locationpool = require('../index');
@@ -101,6 +102,15 @@ lab.experiment('Locationpool Plugin creates a Location and', function () {
         });
     });
 
+    test('it gets a location of my location pool, with invalid ID', function (done) {
+
+        getMyLocationById('NOT_VALID', function (response) {
+
+            expect(response.statusCode).to.equal(404);
+            done();
+        });
+    });
+
     test('it gets a all of my locations', function (done) {
 
         getMyLocations(function (response) {
@@ -144,7 +154,8 @@ lab.experiment('Locationpool Plugin creates a Location and', function () {
 lab.experiment('Locationpool Plugin creates a PreLocation with image and', function () {
 
     lab.beforeEach(function (done) {
-        createTestLocation(function (response) {
+
+        createTestLocationWithImage(function (response) {
 
             // set global id for other test cases
             id = response.result.id;
@@ -154,6 +165,7 @@ lab.experiment('Locationpool Plugin creates a PreLocation with image and', funct
     });
 
     lab.afterEach(function (done) {
+
         // rollback
         deleteTestLocation(id, function (response) {
 
@@ -235,4 +247,8 @@ function getLocationById(id, callback) {
         method: 'GET',
         url: '/api/v1/locations/' + id
     }, callback);
+}
+
+function createTestLocationWithImage(callback) {
+
 }

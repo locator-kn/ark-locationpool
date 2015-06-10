@@ -104,9 +104,7 @@ class Locationpool {
             config: {
                 auth: false,
                 handler: (request, reply) => {
-                    this.db.getLocationById(request.params.locationid)
-                        .then(value => reply(value))
-                        .catch(err => reply(err));
+                    reply(this.db.getLocationById(request.params.locationid));
                 },
                 description: 'Get a single location of a user. Convenience route: Same as calling /locations/:locationId',
                 notes: 'Returns a particular saved location of a user.',
