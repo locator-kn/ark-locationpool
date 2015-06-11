@@ -70,9 +70,7 @@ class Locationpool {
             path: '/users/my/locations',
             config: {
                 handler: (request, reply) => {
-                    this.db.getLocationsByUserId(request.auth.credentials._id)
-                        .then(value => reply(value))
-                        .catch(err => reply(err));
+                    reply(this.db.getLocationsByUserId(request.auth.credentials._id));
                 },
                 description: 'Get the location pool of a user',
                 notes: 'Return a list of all saved  location of a user.',
@@ -86,9 +84,7 @@ class Locationpool {
             path: '/users/my/preLocations',
             config: {
                 handler: (request, reply) => {
-                    this.db.getPreLocationsByUserId(request.auth.credentials._id)
-                        .then(value => reply(value))
-                        .catch(err => reply(err));
+                    reply(this.db.getPreLocationsByUserId(request.auth.credentials._id));
                 },
                 description: 'Get all preLocation pool of a user. Meaning all locations,' +
                 'which are not ready yet to go public',
@@ -123,9 +119,7 @@ class Locationpool {
             config: {
                 auth: false,
                 handler: (request, reply) => {
-                    this.db.getLocationById(request.params.locationid)
-                        .then(value => reply(value))
-                        .catch(err => reply(err));
+                    reply(this.db.getLocationById(request.params.locationid))
                 },
                 description: 'Get a single location of a user',
                 notes: 'Returns a particular saved location of a user.',
