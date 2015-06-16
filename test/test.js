@@ -99,6 +99,7 @@ lab.experiment('Locationpool Plugin creates a Location and', function () {
         getMyLocationById(id, function (response) {
 
             expect(response.statusCode).to.equal(200);
+            expect(response.result.userid).to.equal('test'); // userid
             done();
         });
     });
@@ -117,6 +118,19 @@ lab.experiment('Locationpool Plugin creates a Location and', function () {
         getMyLocations(function (response) {
 
             expect(response.statusCode).to.equal(200);
+            response.result.forEach(function (value) {
+                expect(value.userid).to.equal('test');
+            });
+            done();
+        });
+    });
+
+    test('it gets a location by id', function (done) {
+
+        getLocationById(id, function (response) {
+
+            expect(response.statusCode).to.equal(200);
+            expect(response.result.userid).to.equal('test'); // userid
             done();
         });
     });
@@ -217,8 +231,7 @@ function createTestLocation(callback) {
                 id: '58433437e7710a957cd798b0774a79385389035b'
             },
 
-            category: 'Bar',
-            moods: ['TestMood']
+            category: 'Bar'
         }
     }, callback)
 }
@@ -237,8 +250,7 @@ function updateTestLocation(id, callback) {
                 id: '58433437e7710a957cd798b0774a79385389035b'
             },
 
-            category: 'Bar',
-            moods: ['TestMood']
+            category: 'Bar'
         }
     }, callback)
 }
