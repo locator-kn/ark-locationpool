@@ -1,5 +1,4 @@
-declare
-var Promise:any;
+declare var Promise:any;
 
 export interface IRegister {
     (server:any, options:any, next:any): void;
@@ -127,6 +126,25 @@ class Locationpool {
                 validate: {
                     params: {
                         locationid: this.joi.string().required()
+                    }
+                }
+            }
+        });
+
+        server.route({
+            method: 'GET',
+            path: '/users/{userid}/locations/',
+            config: {
+                auth: false,
+                handler: (request, reply) => {
+                    reply(this.db.getLocationByUserId(request.params.userid))
+                },
+                description: 'Get locationpool of a user',
+                notes: 'Returns the locationpool of a user.',
+                tags: ['api', 'locationpool'],
+                validate: {
+                    params: {
+                        userid: this.joi.string().required()
                     }
                 }
             }
@@ -271,9 +289,7 @@ class Locationpool {
             path: '/users/my/locations/{locationid}',
             config: {
                 handler: (request, reply) => {
-                    this.db.deleteLocationById(request.params.locationid, request.auth.credentials._id)
-                        .then(value => reply(value))
-                        .catch(err => reply(err));
+                    reply(this.db.deleteLocationById(request.params.locationid, request.auth.credentials._id));
                 },
                 description: 'Delete a single location of a user',
                 notes: 'Deletes a particular saved location of a user.',
@@ -352,8 +368,8 @@ class Locationpool {
         var metaData = imageProcessor.createFileInformation(name);
 
         // create a read stream and crop it
-        var readStream = imageProcessor.createCroppedStream(cropping, {x: 1500, y: 675});  // TODO: size needs to be discussed
-        var thumbnailStream = imageProcessor.createCroppedStream(cropping, {x: 120, y: 120});
+        var readStream = imageProcessor.createCroppedStream(cropping, {x: 1024, y: 600});  // TODO: size needs to be discussed
+        var thumbnailStream = imageProcessor.createCroppedStream(cropping, {x: 256, y: 150});
 
         this.db.savePicture(info.id, metaData.attachmentData, readStream)
             .then(() => {
@@ -430,12 +446,10 @@ class Locationpool {
             }),
             budget: this.joi.string(),
             category: this.joi.string(),
-            moods: this.joi.array(),
             delete: this.joi.boolean().default(false)
         });
 
-        var requiredSchema = locationSchema.requiredKeys('title', 'description', 'city', 'category',
-            'moods');
+        var requiredSchema = locationSchema.requiredKeys('title', 'description', 'city', 'category', 'geotag');
 
         this.locationSchemePOST = requiredSchema.required().description('JSON object for creating a location');
         this.locationSchemePUT = locationSchema.required().min(1).description('Update location');
