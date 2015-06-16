@@ -2,7 +2,8 @@
 var Code = require('code');
 var Hapi = require('hapi');
 var Lab = require('lab');
-var Boom = require('boom');
+var FormData = require('form-data');
+var fs = require('fs');
 
 // home made plugins
 var Locationpool = require('../index');
@@ -148,6 +149,20 @@ lab.experiment('Locationpool Plugin creates a Location and', function () {
             done();
         })
     });
+
+    test('it uploads an image and creates a new location', function (done) {
+
+        createTestLocationWithImage(function (response) {
+
+            // set global id for other test cases
+            expect(response.statusCode).to.equal(200);
+            deleteTestLocation(response.result.id, function (response) {
+
+                expect(response.statusCode).to.equal(200);
+                done();
+            });
+        });
+    })
 });
 
 // test the GET request for a location pool
@@ -250,5 +265,51 @@ function getLocationById(id, callback) {
 }
 
 function createTestLocationWithImage(callback) {
+    var payload = [
+        '----WebKitFormBoundary7MA4YWxkTrZu0gW',
+        'Content-Disposition: form-data; name="width"',
+        '',
+        '500',
+        '----WebKitFormBoundary7MA4YWxkTrZu0gW',
+        'Content-Disposition: form-data; name="height"',
+        '',
+        '500',
+        'WebKitFormBoundary7MA4YWxkTrZu0gW',
+        'Content-Disposition: form-data; name="xCoord"',
+        '',
+        '150',
+        'WebKitFormBoundary7MA4YWxkTrZu0gW',
+        'Content-Disposition: form-data; name="yCoord"',
+        '',
+        '1',
+        'WebKitFormBoundary7MA4YWxkTrZu0gW',
+        'Content-Disposition: form-data; name="locationTitle"',
+        '',
+        'Konstanz',
+        'WebKitFormBoundary7MA4YWxkTrZu0gW',
+        'Content-Disposition: form-data; name="file"; filename="imm000_00.jpg"',
+        'Content-Type: image/jpeg',
+        '',
+        '',
+        '----WebKitFormBoundary7MA4YWxkTrZu0gW'
+    ];
 
+    payload='------WebKitFormBoundary2o6FGRn8iv2ibXfX\nContent-Disposition: form-data; name="width"\n\n819------WebKitFormBoundary2o6FGRn8iv2ibXfX\nContent-Disposition: form-data; name="height"\n\n819\n------WebKitFormBoundary2o6FGRn8iv2ibXfX\nContent-Disposition: form-data; name="xCoord"\n\n615\n------WebKitFormBoundary2o6FGRn8iv2ibXfX\nContent-Disposition: form-data; name="yCoord"\n\n0\n------WebKitFormBoundary2o6FGRn8iv2ibXfX\nContent-Disposition: form-data; name="file"; filename="imm036_35.jpg"\nContent-Type: image/jpeg\n\n\n------WebKitFormBoundary2o6FGRn8iv2ibXfX--'
+   // payload = payload.join('\r\n');
+
+    var headers = {
+        'content-type': 'multipart/form-data; boundary=----WebKitFormBoundary2FzKNAUFGCriIctK'
+    };
+
+    var form = new FormData();
+    form.append('my_field', 'my value');
+    form.append('my_buffer', new Buffer(10));
+    form.append('my_file', fs.createReadStream('/foo/bar.jpg'));
+
+    server.inject({
+        method: 'POST',
+        url: '/api/v1/users/my/locations/picture',
+        payload: payload,
+        headers: headers
+    }, callback)
 }
