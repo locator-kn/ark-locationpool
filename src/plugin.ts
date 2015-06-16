@@ -133,11 +133,11 @@ class Locationpool {
 
         server.route({
             method: 'GET',
-            path: '/users/{userid}/locations/',
+            path: '/users/{userid}/locations',
             config: {
                 auth: false,
                 handler: (request, reply) => {
-                    reply(this.db.getLocationByUserId(request.params.userid))
+                    reply(this.db.getLocationsByUserId(request.params.userid))
                 },
                 description: 'Get locationpool of a user',
                 notes: 'Returns the locationpool of a user.',
