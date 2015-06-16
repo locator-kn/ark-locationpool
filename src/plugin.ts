@@ -446,7 +446,6 @@ class Locationpool {
             }),
             budget: this.joi.string(),
             category: this.joi.string(),
-            moods: this.joi.array(),
             delete: this.joi.boolean().default(false)
         });
 
