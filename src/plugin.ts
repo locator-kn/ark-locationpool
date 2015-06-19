@@ -325,7 +325,7 @@ class Locationpool {
      * @param reply
      */
     private mainPicture(request:any, reply:any):void {
-        this.isItMyLocation(request.aut.credentials._id, request.params.locationid)
+        this.isItMyLocation(request.auth.credentials._id, request.params.locationid)
             .catch(err => reply(err))
             .then(() => {
                 var name = request.payload.locationTitle + '-location';
