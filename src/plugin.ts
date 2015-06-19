@@ -241,6 +241,15 @@ class Locationpool {
                     // Potential Bug. For now we are certain that the frontend will provide enough data to
                     // convert this preLocation into a real one
                     request.payload.preLocation = false;
+
+                    // add geotag image
+                    if (request.payload.geotag) {
+                        request.payload.images = {
+                            googlemap: 'https://maps.googleapis.com/maps/api/staticmap?zoom=15&markers=' +
+                            request.payload.geotag.long + ',' + request.payload.geotag.lat
+                        }
+                    }
+
                     this.db.updateLocation(request.params.locationid, request.auth.credentials._id, request.payload)
                         .then(value => reply(value))
                         .catch(err => reply(err));
