@@ -187,12 +187,24 @@ class Locationpool {
             config: {
                 handler: (request, reply) => {
 
-                    request.payload.userid = request.auth.credentials._id;
-                    request.payload.type = "location";
+                    var mapURL = 'https://maps.googleapis.com/maps/api/staticmap?zoom=15&markers=' +
+                        request.payload.geotag.long + ',' + request.payload.geotag.lat;
 
-                    this.db.createLocation(request.payload)
-                        .then(value =>  reply({messages: 'success', id: value.id}))
-                        .catch(error =>  reply(error));
+                    var newLocation = {
+                        type: 'location',
+                        userid: request.auth.credentials._id,
+                        title: request.payload.title,
+                        description: request.payload.description,
+                        city: request.payload.city,
+                        category: request.payload.category,
+                        geotag: request.payload.geotag,
+                        images: {
+                            googlemap: mapURL
+                        }
+                    };
+
+                    // reply promise
+                    reply(this.db.createLocation(newLocation));
                 },
                 description: 'Create a single location for a user',
                 tags: ['api', 'locationpool'],
@@ -229,6 +241,15 @@ class Locationpool {
                     // Potential Bug. For now we are certain that the frontend will provide enough data to
                     // convert this preLocation into a real one
                     request.payload.preLocation = false;
+
+                    // add geotag image
+                    if (request.payload.geotag) {
+                        request.payload.images = {
+                            googlemap: 'https://maps.googleapis.com/maps/api/staticmap?zoom=15&markers=' +
+                            request.payload.geotag.long + ',' + request.payload.geotag.lat
+                        }
+                    }
+
                     this.db.updateLocation(request.params.locationid, request.auth.credentials._id, request.payload)
                         .then(value => reply(value))
                         .catch(err => reply(err));
@@ -313,7 +334,7 @@ class Locationpool {
      * @param reply
      */
     private mainPicture(request:any, reply:any):void {
-        this.isItMyLocation(request.aut.credentials._id, request.params.locationid)
+        this.isItMyLocation(request.auth.credentials._id, request.params.locationid)
             .catch(err => reply(err))
             .then(() => {
                 var name = request.payload.locationTitle + '-location';
@@ -408,20 +429,19 @@ class Locationpool {
      * @returns {Promise|Promise<T>}
      */
     private isItMyLocation(userid:string, locationid:string):any {
-        return new Promise((reject, resolve) => {
+        return new Promise((resolve, reject) => {
 
-            this.db.getLocationById(locationid, (err, data) => {
-
-                if (err) {
-                    return reject(this.boom.badRequest(err));
-                }
+            this.db.getLocationById(locationid).then(data => {
 
                 if (!data.userid || data.userid !== userid) {
                     return reject(this.boom.forbidden());
                 }
+                return resolve(data)
 
-                return resolve(data);
-            });
+            }).catch(err => {
+
+                return reject(err);
+            })
         });
     }
 
