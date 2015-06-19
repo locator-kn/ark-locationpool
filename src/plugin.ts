@@ -361,7 +361,7 @@ class Locationpool {
             name = request.payload.locationTitle + '-location';
 
             // save picture to the just created document
-            this.savePicture(stripped.options, stripped.cropping, name, reply)
+            this.savePicture(stripped.options, stripped.cropping, name, preLocation.userid, reply)
 
         }).catch(err => reply(err));
     }
@@ -374,7 +374,7 @@ class Locationpool {
      * @param name
      * @param reply
      */
-    private savePicture(info:any, cropping:any, name:string, reply:any):void {
+    private savePicture(info:any, cropping:any, name:string, userid:string, reply:any):void {
 
         // create object for processing images
         var imageProcessor = this.imgProcessor.processor(info);
@@ -390,17 +390,28 @@ class Locationpool {
         var readStream = imageProcessor.createCroppedStream(cropping, {x: 2048, y: 1200});  // TODO: size needs to be discussed
         var thumbnailStream = imageProcessor.createCroppedStream(cropping, {x: 256, y: 150});
 
+        // save original picture
         this.db.savePicture(info.id, metaData.attachmentData, readStream)
             .then(() => {
+                // save thumbnail
                 metaData.attachmentData.name = metaData.thumbnailName;
                 return this.db.savePicture(info.id, metaData.attachmentData, thumbnailStream);
-            }).then(() => {
-                return this.db.updateDocumentWithoutCheck(info.id, {images: metaData.imageLocation});
-            }).then((value) => {
-                this.replySuccess(reply, metaData.imageLocation, value)
-            }).catch((err) => {
-                return reply(err);
-            });
+            }).then(value => {
+
+                // save new urls into location document
+                var prom1 = this.db.updateDocument(value.id, userid, {images: metaData.imageLocation});
+
+                // update all trips containing this location
+                var prom2 = this.db.updateTripsWithLocationImage(value.id, userid, metaData.imageLocation);
+
+                return Promise.all([prom1, prom2])
+
+            }).then(value => {
+
+                // reply finally
+                this.replySuccess(reply, metaData.imageLocation, value[0])
+
+            }).catch(err => reply(err));
 
     }
 
