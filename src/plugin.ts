@@ -420,20 +420,19 @@ class Locationpool {
      * @returns {Promise|Promise<T>}
      */
     private isItMyLocation(userid:string, locationid:string):any {
-        return new Promise((reject, resolve) => {
+        return new Promise((resolve, reject) => {
 
-            this.db.getLocationById(locationid, (err, data) => {
-
-                if (err) {
-                    return reject(this.boom.badRequest(err));
-                }
+            this.db.getLocationById(locationid).then(data => {
 
                 if (!data.userid || data.userid !== userid) {
                     return reject(this.boom.forbidden());
                 }
+                return resolve(data)
 
-                return resolve(data);
-            });
+            }).catch(err => {
+
+                return reject(err);
+            })
         });
     }
 
