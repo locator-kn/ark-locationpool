@@ -187,12 +187,24 @@ class Locationpool {
             config: {
                 handler: (request, reply) => {
 
-                    request.payload.userid = request.auth.credentials._id;
-                    request.payload.type = "location";
+                    var mapURL = 'https://maps.googleapis.com/maps/api/staticmap?zoom=15&markers=' +
+                        request.payload.geotag.long + ',' + request.payload.geotag.lat;
 
-                    this.db.createLocation(request.payload)
-                        .then(value =>  reply({messages: 'success', id: value.id}))
-                        .catch(error =>  reply(error));
+                    var newLocation = {
+                        type: 'location',
+                        userid: request.auth.credentials._id,
+                        title: request.payload.title,
+                        description: request.payload.description,
+                        city: request.payload.city,
+                        category: request.payload.category,
+                        geotag: request.payload.geotag,
+                        images: {
+                            googlemap: mapURL
+                        }
+                    };
+
+                    // reply promise
+                    reply(this.db.createLocation(newLocation));
                 },
                 description: 'Create a single location for a user',
                 tags: ['api', 'locationpool'],
