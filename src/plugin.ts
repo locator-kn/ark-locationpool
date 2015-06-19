@@ -387,7 +387,7 @@ class Locationpool {
         var metaData = imageProcessor.createFileInformation(name);
 
         // create a read stream and crop it
-        var readStream = imageProcessor.createCroppedStream(cropping, {x: 1024, y: 600});  // TODO: size needs to be discussed
+        var readStream = imageProcessor.createCroppedStream(cropping, {x: 2048, y: 1200});  // TODO: size needs to be discussed
         var thumbnailStream = imageProcessor.createCroppedStream(cropping, {x: 256, y: 150});
 
         this.db.savePicture(info.id, metaData.attachmentData, readStream)
