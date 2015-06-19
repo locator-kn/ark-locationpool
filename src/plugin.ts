@@ -246,7 +246,7 @@ class Locationpool {
                     if (request.payload.geotag) {
                         request.payload.images = {
                             googlemap: 'https://maps.googleapis.com/maps/api/staticmap?zoom=15&markers=' +
-                            request.payload.geotag.lat + ',' + request.payload.geotag.lang
+                            request.payload.geotag.lat + ',' + request.payload.geotag.long
                         }
                     }
 
