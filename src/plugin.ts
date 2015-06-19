@@ -250,9 +250,7 @@ class Locationpool {
                         }
                     }
 
-                    this.db.updateLocation(request.params.locationid, request.auth.credentials._id, request.payload)
-                        .then(value => reply(value))
-                        .catch(err => reply(err));
+                    reply(this.db.updateLocation(request.params.locationid, request.auth.credentials._id, request.payload));
                 },
                 description: 'Update a single location of a user',
                 tags: ['api', 'locationpool'],
