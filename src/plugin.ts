@@ -188,7 +188,7 @@ class Locationpool {
                 handler: (request, reply) => {
 
                     var mapURL = 'https://maps.googleapis.com/maps/api/staticmap?zoom=15&markers=' +
-                        request.payload.geotag.long + ',' + request.payload.geotag.lat;
+                        request.payload.geotag.lat + ',' + request.payload.geotag.long;
 
                     var newLocation = {
                         type: 'location',
@@ -246,7 +246,7 @@ class Locationpool {
                     if (request.payload.geotag) {
                         request.payload.images = {
                             googlemap: 'https://maps.googleapis.com/maps/api/staticmap?zoom=15&markers=' +
-                            request.payload.geotag.long + ',' + request.payload.geotag.lat
+                            request.payload.geotag.lat + ',' + request.payload.geotag.lang
                         }
                     }
 
