@@ -339,7 +339,7 @@ class Locationpool {
                 var stripped = this.imgProcessor.stripHapiRequestObject(request);
                 stripped.options.id = request.params.locationid;
 
-                this.savePicture(stripped.options, stripped.cropping, name, reply)
+                this.savePicture(stripped.options, stripped.cropping, name, request.auth.credentials._id, reply)
             });
     }
 
