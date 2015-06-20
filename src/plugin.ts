@@ -254,7 +254,7 @@ class Locationpool {
 
                     var prom1 = this.db.updateLocation(request.params.locationid, request.auth.credentials._id, request.payload);
 
-                    reply(Promise.all[prom1, prom2 || true]);
+                    reply(Promise.all([prom1, prom2 || true]));
                 },
                 description: 'Update a single location of a user',
                 tags: ['api', 'locationpool'],
@@ -312,7 +312,9 @@ class Locationpool {
             path: '/users/my/locations/{locationid}',
             config: {
                 handler: (request, reply) => {
-                    reply(this.db.deleteLocationById(request.params.locationid, request.auth.credentials._id));
+                    var prom1 = this.db.deleteLocationById(request.params.locationid, request.auth.credentials._id);
+                    var prom2 = this.db.removeLocatinFromTrips(request.params.locationid, request.auth.credentials._id);
+                    reply(Promise.all([prom1, prom2]));
                 },
                 description: 'Delete a single location of a user',
                 notes: 'Deletes a particular saved location of a user.',
