@@ -313,7 +313,7 @@ class Locationpool {
             config: {
                 handler: (request, reply) => {
                     var prom1 = this.db.deleteLocationById(request.params.locationid, request.auth.credentials._id);
-                    var prom2 = this.db.removeLocatinFromTrips(request.params.locationid, request.auth.credentials._id);
+                    var prom2 = this.db.removeLocationFromTrips(request.params.locationid, request.auth.credentials._id);
                     reply(Promise.all([prom1, prom2]));
                 },
                 description: 'Delete a single location of a user',
