@@ -312,6 +312,27 @@ class Locationpool {
             path: '/users/my/locations/{locationid}',
             config: {
                 handler: (request, reply) => {
+                    this.db.isLocationNotInUse(request.params.locationid).then(()=> {
+                        // delete location
+                        reply(this.db.deleteLocationById(request.params.locationid, request.auth.credentials._id));
+                    }).catch(reply);
+                },
+                description: 'Delete a single location of a user',
+                notes: 'Deletes a particular saved location of a user.',
+                tags: ['api', 'locationpool'],
+                validate: {
+                    params: {
+                        locationid: this.joi.string().required()
+                    }
+                }
+            }
+        });
+
+        server.route({
+            method: 'DELETE',
+            path: '/users/my/locations/{locationid}/force',
+            config: {
+                handler: (request, reply) => {
                     var prom1 = this.db.deleteLocationById(request.params.locationid, request.auth.credentials._id);
                     var prom2 = this.db.removeLocationFromTrips(request.params.locationid, request.auth.credentials._id);
                     reply(Promise.all([prom1, prom2]));
