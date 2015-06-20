@@ -359,14 +359,13 @@ class Locationpool {
      */
     private mainPicture(request:any, reply:any):void {
         this.isItMyLocation(request.auth.credentials._id, request.params.locationid)
-            .catch(err => reply(err))
             .then(() => {
                 var name = request.payload.locationTitle + '-location';
                 var stripped = this.imgProcessor.stripHapiRequestObject(request);
                 stripped.options.id = request.params.locationid;
 
                 this.savePicture(stripped.options, stripped.cropping, name, request.auth.credentials._id, reply)
-            });
+            }).catch(reply);
     }
 
     private createLocationWithImage(request, reply) {
@@ -387,9 +386,9 @@ class Locationpool {
             name = request.payload.locationTitle + '-location';
 
             // save picture to the just created document
-            this.savePicture(stripped.options, stripped.cropping, name, preLocation.userid, reply)
+            this.savePicture(stripped.options, stripped.cropping, name, request.auth.credentials._id, reply)
 
-        }).catch(err => reply(err));
+        }).catch(reply);
     }
 
     /**
@@ -437,7 +436,7 @@ class Locationpool {
                 // reply finally
                 this.replySuccess(reply, metaData.imageLocation, value[0])
 
-            }).catch(err => reply(err));
+            }).catch(reply);
 
     }
 
@@ -473,10 +472,7 @@ class Locationpool {
                 }
                 return resolve(data)
 
-            }).catch(err => {
-
-                return reject(err);
-            })
+            }).catch(reject)
         });
     }
 
