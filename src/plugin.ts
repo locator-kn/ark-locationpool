@@ -399,7 +399,7 @@ class Locationpool {
             }).then(value => {
 
                 // save new urls into location document
-                var prom1 = this.db.updateDocument(value.id, userid, {images: metaData.imageLocation});
+                var prom1 = this.db.updateDocument(value.id, userid, {images: metaData.imageLocation}, 'location');
 
                 // update all trips containing this location
                 var prom2 = this.db.updateTripsWithLocationImage(value.id, userid, metaData.imageLocation);
