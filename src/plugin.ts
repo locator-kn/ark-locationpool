@@ -247,10 +247,14 @@ class Locationpool {
                         request.payload.images = {
                             googlemap: 'https://maps.googleapis.com/maps/api/staticmap?zoom=15&markers=' +
                             request.payload.geotag.long + ',' + request.payload.geotag.lat
-                        }
+                        };
+
+                        var prom2 = this.db.updateTripsWithLocationImage(request.params.locationid, request.auth.credentials._id, request.payload.images);
                     }
 
-                    reply(this.db.updateLocation(request.params.locationid, request.auth.credentials._id, request.payload));
+                    var prom1 = this.db.updateLocation(request.params.locationid, request.auth.credentials._id, request.payload);
+
+                    reply(Promise.all[prom1, prom2 || true]);
                 },
                 description: 'Update a single location of a user',
                 tags: ['api', 'locationpool'],
