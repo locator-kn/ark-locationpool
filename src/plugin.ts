@@ -247,10 +247,13 @@ class Locationpool {
                         request.payload.images = {
                             googlemap: 'https://maps.googleapis.com/maps/api/staticmap?zoom=15&markers=' +
                             request.payload.geotag.lat + ',' + request.payload.geotag.long
-                        }
+                        };
+                        var prom2 = this.db.updateTripsWithLocationImage(request.params.locationid, request.auth.credentials._id, request.payload.images);
                     }
 
-                    reply(this.db.updateLocation(request.params.locationid, request.auth.credentials._id, request.payload));
+                    var prom1 = this.db.updateLocation(request.params.locationid, request.auth.credentials._id, request.payload);
+
+                    reply(Promise.all([prom1, prom2 || true]));
                 },
                 description: 'Update a single location of a user',
                 tags: ['api', 'locationpool'],
@@ -308,7 +311,30 @@ class Locationpool {
             path: '/users/my/locations/{locationid}',
             config: {
                 handler: (request, reply) => {
-                    reply(this.db.deleteLocationById(request.params.locationid, request.auth.credentials._id));
+                    this.db.isLocationNotInUse(request.params.locationid).then(()=> {
+                        // delete location
+                        reply(this.db.deleteLocationById(request.params.locationid, request.auth.credentials._id));
+                    }).catch(reply);
+                },
+                description: 'Delete a single location of a user',
+                notes: 'Deletes a particular saved location of a user.',
+                tags: ['api', 'locationpool'],
+                validate: {
+                    params: {
+                        locationid: this.joi.string().required()
+                    }
+                }
+            }
+        });
+
+        server.route({
+            method: 'DELETE',
+            path: '/users/my/locations/{locationid}/force',
+            config: {
+                handler: (request, reply) => {
+                    var prom1 = this.db.deleteLocationById(request.params.locationid, request.auth.credentials._id);
+                    var prom2 = this.db.removeLocationFromTrips(request.params.locationid, request.auth.credentials._id);
+                    reply(Promise.all([prom1, prom2]));
                 },
                 description: 'Delete a single location of a user',
                 notes: 'Deletes a particular saved location of a user.',
@@ -333,14 +359,13 @@ class Locationpool {
      */
     private mainPicture(request:any, reply:any):void {
         this.isItMyLocation(request.auth.credentials._id, request.params.locationid)
-            .catch(err => reply(err))
             .then(() => {
                 var name = request.payload.locationTitle + '-location';
                 var stripped = this.imgProcessor.stripHapiRequestObject(request);
                 stripped.options.id = request.params.locationid;
 
-                this.savePicture(stripped.options, stripped.cropping, name, reply)
-            });
+                this.savePicture(stripped.options, stripped.cropping, name, request.auth.credentials._id, reply)
+            }).catch(reply);
     }
 
     private createLocationWithImage(request, reply) {
@@ -361,9 +386,9 @@ class Locationpool {
             name = request.payload.locationTitle + '-location';
 
             // save picture to the just created document
-            this.savePicture(stripped.options, stripped.cropping, name, reply)
+            this.savePicture(stripped.options, stripped.cropping, name, request.auth.credentials._id, reply)
 
-        }).catch(err => reply(err));
+        }).catch(reply);
     }
 
     /**
@@ -374,7 +399,7 @@ class Locationpool {
      * @param name
      * @param reply
      */
-    private savePicture(info:any, cropping:any, name:string, reply:any):void {
+    private savePicture(info:any, cropping:any, name:string, userid:string, reply:any):void {
 
         // create object for processing images
         var imageProcessor = this.imgProcessor.processor(info);
@@ -387,20 +412,31 @@ class Locationpool {
         var metaData = imageProcessor.createFileInformation(name);
 
         // create a read stream and crop it
-        var readStream = imageProcessor.createCroppedStream(cropping, {x: 1024, y: 600});  // TODO: size needs to be discussed
+        var readStream = imageProcessor.createCroppedStream(cropping, {x: 2048, y: 1200});  // TODO: size needs to be discussed
         var thumbnailStream = imageProcessor.createCroppedStream(cropping, {x: 256, y: 150});
 
+        // save original picture
         this.db.savePicture(info.id, metaData.attachmentData, readStream)
             .then(() => {
+                // save thumbnail
                 metaData.attachmentData.name = metaData.thumbnailName;
                 return this.db.savePicture(info.id, metaData.attachmentData, thumbnailStream);
-            }).then(() => {
-                return this.db.updateDocumentWithoutCheck(info.id, {images: metaData.imageLocation});
-            }).then((value) => {
-                this.replySuccess(reply, metaData.imageLocation, value)
-            }).catch((err) => {
-                return reply(err);
-            });
+            }).then(value => {
+
+                // save new urls into location document
+                var prom1 = this.db.updateDocument(value.id, userid, {images: metaData.imageLocation}, 'location');
+
+                // update all trips containing this location
+                var prom2 = this.db.updateTripsWithLocationImage(value.id, userid, metaData.imageLocation);
+
+                return Promise.all([prom1, prom2])
+
+            }).then(value => {
+
+                // reply finally
+                this.replySuccess(reply, metaData.imageLocation, value[0])
+
+            }).catch(reply);
 
     }
 
@@ -436,10 +472,7 @@ class Locationpool {
                 }
                 return resolve(data)
 
-            }).catch(err => {
-
-                return reject(err);
-            })
+            }).catch(reject)
         });
     }
 
@@ -459,8 +492,8 @@ class Locationpool {
             }),
 
             geotag: this.joi.object().keys({
-                lat: this.joi.number().required(),
-                long: this.joi.number().required()
+                long: this.joi.number().required(),
+                lat: this.joi.number().required()
             }),
             budget: this.joi.string(),
             category: this.joi.string(),
