@@ -496,7 +496,7 @@ class Locationpool {
                 lat: this.joi.number().required()
             }),
             budget: this.joi.string().valid(''),
-            tags: this.joi.array().item(this.joi.string().valid('').required()),
+            tags: this.joi.array().items(this.joi.string().valid('').required()),
             delete: this.joi.boolean().default(false)
         });
 
