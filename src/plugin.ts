@@ -502,7 +502,7 @@ class Locationpool {
         // basic schema
         var locationSchema = this.joi.object().keys({
             title: this.joi.string(),
-            description: this.joi.string(),
+            description: this.joi.string().allow(''),
 
             city: this.joi.object().keys({
                 title: this.joi.string().required(),
