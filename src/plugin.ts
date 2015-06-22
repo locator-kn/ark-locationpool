@@ -500,7 +500,7 @@ class Locationpool {
             delete: this.joi.boolean().default(false)
         });
 
-        var requiredSchema = locationSchema.requiredKeys('title', 'description', 'city', 'category', 'geotag');
+        var requiredSchema = locationSchema.requiredKeys('title', 'description', 'city', 'tags', 'geotag');
 
         this.locationSchemePOST = requiredSchema.required().description('JSON object for creating a location');
         this.locationSchemePUT = locationSchema.required().min(1).description('Update location');
