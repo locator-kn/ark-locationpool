@@ -137,7 +137,7 @@ class Locationpool {
             config: {
                 auth: false,
                 handler: (request, reply) => {
-                    reply(this.db.getLocationsByUserId(request.params.userid))
+                    reply(this.db.getPublicLocationsByUserId(request.params.userid))
                 },
                 description: 'Get locationpool of a user',
                 notes: 'Returns the locationpool of a user.',
