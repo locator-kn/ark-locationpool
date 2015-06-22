@@ -286,6 +286,25 @@ class Locationpool {
             }
         });
 
+        // update/create the main picture of a location
+        server.route({
+            method: ['PUT', 'POST'],
+            path: '/locations/{locationid}/togglePublic',
+            config: {
+                handler: (request, reply) => {
+                    reply(this.db.togglePublicLocation(request.params.locationid, request.auth.credentials._id));
+                },
+                description: 'Change the status of a location into Public/Private',
+                notes: 'If location was public it is transformed into private and vice verca',
+                tags: ['api', 'location'],
+                validate: {
+                    params: {
+                        locationid: this.joi.string().required()
+                    }
+                }
+            }
+        });
+
         // DELETE
         // should this route be provided? delete all locations??
         //server.route({
@@ -497,7 +516,8 @@ class Locationpool {
             }),
             budget: this.joi.string().valid(''),
             tags: this.joi.array().items(this.joi.string().valid('').required()),
-            delete: this.joi.boolean().default(false)
+            delete: this.joi.boolean().default(false),
+            public: this.joi.boolean().default(true)
         });
 
         var requiredSchema = locationSchema.requiredKeys('title', 'description', 'city', 'tags', 'geotag');
