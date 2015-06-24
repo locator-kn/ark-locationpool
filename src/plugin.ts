@@ -92,6 +92,30 @@ class Locationpool {
             }
         });
 
+        server.route({
+            method: 'GET',
+            path: '/locations/city/{city}',
+            config: {
+                auth: false,
+                handler: (request, reply) => {
+                    var city = request.params.city;
+                    if (city === 'Konstanz' || city === 'Freiburg' || city === 'Karlsruhe' || city === 'Tuebingen' || city === 'Heidelberg') {
+                        reply(this.db.getLocationsByCity(city));
+                    } else {
+                        reply(this.boom.notFound('Keine Locations für diese Stadt'))
+                    }
+                },
+                description: 'Get all locations from a city',
+                notes: 'Return a list of all saved  location of a user.',
+                tags: ['api', 'locationpool'],
+                validate: {
+                    params: {
+                        city: this.joi.string().required()
+                    }
+                }
+            }
+        });
+
 
         server.route({
             method: 'GET',
