@@ -102,10 +102,33 @@ class Locationpool {
                     if (city === 'Konstanz' || city === 'Freiburg' || city === 'Karlsruhe' || city === 'Tuebingen' || city === 'Heidelberg') {
                         reply(this.db.getLocationsByCity(city));
                     } else {
-                        reply(this.boom.notFound('Keine Locations für diese Stadt'))
+                        reply(this.boom.notFound('Deine Stadt is bis jetzt noch nicht supported'))
                     }
                 },
-                description: 'Get all locations from a city',
+                description: 'Get all locations from a city. Currently only cities from Konstanz, Freiburg, Karlsruhe, Tuebuingen and Heidelberg',
+                notes: 'Return a list of all saved  location of a city.',
+                tags: ['api', 'locationpool'],
+                validate: {
+                    params: {
+                        city: this.joi.string().required()
+                    }
+                }
+            }
+        });
+
+        server.route({
+            method: 'GET',
+            path: '/users/my/locations/city/{city}',
+            config: {
+                handler: (request, reply) => {
+                    var city = request.params.city;
+                    if (city === 'Konstanz' || city === 'Freiburg' || city === 'Karlsruhe' || city === 'Tuebingen' || city === 'Heidelberg') {
+                        reply(this.db.getLocationsByCityAndUser(city, request.auth.credentials._id));
+                    } else {
+                        reply(this.boom.notFound('Deine Stadt is bis jetzt noch nicht supported'))
+                    }
+                },
+                description: 'Get all MY locations from a city. Currently only cities from Konstanz, Freiburg, Karlsruhe, Tuebuingen and Heidelberg',
                 notes: 'Return a list of all saved  location of a user.',
                 tags: ['api', 'locationpool'],
                 validate: {
@@ -199,6 +222,10 @@ class Locationpool {
                         ext: this.joi.string()
                             .required().regex(this.regex.imageExtension)
                     }
+                    //,
+                    //query: {
+                    //    date: this.joi.date()
+                    //}
                 }
 
             }
@@ -379,7 +406,7 @@ class Locationpool {
                     var prom2 = this.db.removeLocationFromTrips(request.params.locationid, request.auth.credentials._id);
                     reply(Promise.all([prom1, prom2]));
                 },
-                description: 'Delete a single location of a user',
+                description: 'Delete a single location of a user and updates all trips, where this location was referenced',
                 notes: 'Deletes a particular saved location of a user.',
                 tags: ['api', 'locationpool'],
                 validate: {
