@@ -221,6 +221,7 @@ class Locationpool {
                         description: request.payload.description,
                         city: request.payload.city,
                         category: request.payload.category,
+                        tags: request.payload.tags,
                         geotag: request.payload.geotag,
                         images: {
                             googlemap: mapURL
