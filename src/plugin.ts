@@ -199,6 +199,25 @@ class Locationpool {
 
         server.route({
             method: 'GET',
+            path: '/trips/{tripid}/locations',
+            config: {
+                auth: false,
+                handler: (request, reply) => {
+                    reply(this.db.getLocationsByTripId(request.params.tripid))
+                },
+                description: 'Get all locations, which belong to a certain trip',
+                notes: 'All locations in a trip',
+                tags: ['api', 'locationpool'],
+                validate: {
+                    params: {
+                        tripid: this.joi.string().required()
+                    }
+                }
+            }
+        });
+
+        server.route({
+            method: 'GET',
             path: '/locations/{locationid}/{name}.{ext}',
             config: {
                 auth: false,
