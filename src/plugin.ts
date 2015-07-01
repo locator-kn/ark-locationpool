@@ -234,10 +234,6 @@ class Locationpool {
                         ext: this.joi.string()
                             .required().regex(this.regex.imageExtension)
                     }
-                    //,
-                    //query: {
-                    //    date: this.joi.date()
-                    //}
                 }
 
             }
@@ -293,7 +289,6 @@ class Locationpool {
                 },
                 plugins: swaggerUpload
             }
-
         });
 
         // PUT
@@ -368,26 +363,6 @@ class Locationpool {
                 }
             }
         });
-
-        // DELETE
-        // should this route be provided? delete all locations??
-        //server.route({
-        //    method: 'DELETE',
-        //    path: '/users/my/locations',
-        //    config: {
-        //        handler: (request, reply) => {
-        //            this.db.deleteLocationsByUserId(request.auth.credentials._id, (err, data) => {
-        //                if (err) {
-        //                    return reply(this.boom.wrap(err, 400));
-        //                }
-        //                reply(data);
-        //            });
-        //        },
-        //        description: 'Delete all locations of a user',
-        //        notes: 'Deletes all locations',
-        //        tags: ['api', 'locationpool']
-        //    }
-        //});
 
         server.route({
             method: 'DELETE',
