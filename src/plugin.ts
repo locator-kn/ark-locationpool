@@ -99,11 +99,8 @@ class Locationpool {
                 auth: false,
                 handler: (request, reply) => {
                     var city = request.params.city;
-                    if (city === 'Konstanz' || city === 'Freiburg' || city === 'Karlsruhe' || city === 'Tuebingen' || city === 'Heidelberg') {
-                        reply(this.db.getLocationsByCity(city));
-                    } else {
-                        reply(this.boom.notFound('Deine Stadt is bis jetzt noch nicht supported'))
-                    }
+
+                    reply(this.db.getLocationsByCity(city));
                 },
                 description: 'Get all locations from a city. Currently only cities from Konstanz, Freiburg, Karlsruhe, Tuebuingen and Heidelberg',
                 notes: 'Return a list of all saved  location of a city.',
@@ -122,11 +119,7 @@ class Locationpool {
             config: {
                 handler: (request, reply) => {
                     var city = request.params.city;
-                    if (city === 'Konstanz' || city === 'Freiburg' || city === 'Karlsruhe' || city === 'Tuebingen' || city === 'Heidelberg') {
                         reply(this.db.getLocationsByCityAndUser(city, request.auth.credentials._id));
-                    } else {
-                        reply(this.boom.notFound('Deine Stadt is bis jetzt noch nicht supported'))
-                    }
                 },
                 description: 'Get all MY locations from a city. Currently only cities from Konstanz, Freiburg, Karlsruhe, Tuebuingen and Heidelberg',
                 notes: 'Return a list of all saved  location of a user.',
@@ -502,7 +495,7 @@ class Locationpool {
         var metaData = imageProcessor.createFileInformation(name);
 
         // create a read stream and crop it
-        var readStream = imageProcessor.createCroppedStream(cropping, {x: 2048, y: 1200});  // TODO: size needs to be discussed
+        var readStream = imageProcessor.createCroppedStream(cropping, {x: 1200, y: 703});  // TODO: size needs to be discussed
         var thumbnailStream = imageProcessor.createCroppedStream(cropping, {x: 256, y: 150});
 
         // save original picture
