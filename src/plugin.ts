@@ -1,5 +1,7 @@
 declare var Promise:any;
 
+import {initLogging, log} from './util/logging'
+
 export interface IRegister {
     (server:any, options:any, next:any): void;
     attributes?: any;
@@ -16,6 +18,7 @@ class Locationpool {
     private imgProcessor:any;
     private imageValidation:any;
     private imageSchemaPost:any;
+    private imageSize:any;
 
 
     constructor() {
@@ -25,6 +28,7 @@ class Locationpool {
         this.joi = require('joi');
         this.boom = require('boom');
         var imageUtil = require('locator-image-utility');
+        this.imageSize = require('locator-image-utility').size;
         this.regex = imageUtil.regex;
         this.imageValidation = imageUtil.validation;
         this.imgProcessor = imageUtil.image;
@@ -42,6 +46,7 @@ class Locationpool {
         });
 
         this._register(server, options);
+        initLogging(server)
         next();
     };
 
@@ -119,7 +124,7 @@ class Locationpool {
             config: {
                 handler: (request, reply) => {
                     var city = request.params.city;
-                        reply(this.db.getLocationsByCityAndUser(city, request.auth.credentials._id));
+                    reply(this.db.getLocationsByCityAndUser(city, request.auth.credentials._id));
                 },
                 description: 'Get all MY locations from a city. Currently only cities from Konstanz, Freiburg, Karlsruhe, Tuebuingen and Heidelberg',
                 notes: 'Return a list of all saved  location of a user.',
@@ -452,49 +457,58 @@ class Locationpool {
     /**
      * Save picture.
      *
-     * @param info
+     * @param requestData
      * @param cropping
      * @param name
      * @param reply
      */
-    private savePicture(info:any, cropping:any, name:string, userid:string, reply:any):void {
+    private savePicture(requestData:any, cropping:any, name:string, userid:string, reply:any):void {
 
         // create object for processing images
-        var imageProcessor = this.imgProcessor.processor(info);
+        var imageProcessor = this.imgProcessor.processor(requestData);
         if (imageProcessor.error) {
-            console.log(imageProcessor);
             return reply(this.boom.badRequest(imageProcessor.error))
         }
 
-        // get info needed for output or database
-        var metaData = imageProcessor.createFileInformation(name);
+        // get requestData needed for output or database
+        var pictureData = imageProcessor.createFileInformation(name);
+        var attachmentData = pictureData.attachmentData;
 
         // create a read stream and crop it
         var readStream = imageProcessor.createCroppedStream(cropping, {x: 1200, y: 703});  // TODO: size needs to be discussed
-        var thumbnailStream = imageProcessor.createCroppedStream(cropping, {x: 256, y: 150});
 
-        // save original picture
-        this.db.savePicture(info.id, metaData.attachmentData, readStream)
+        this.db.savePicture(requestData.id, attachmentData, readStream)
             .then(() => {
-                // save thumbnail
-                metaData.attachmentData.name = metaData.thumbnailName;
-                return this.db.savePicture(info.id, metaData.attachmentData, thumbnailStream);
-            }).then(value => {
-
                 // save new urls into location document
-                var prom1 = this.db.updateDocument(value.id, userid, {images: metaData.imageLocation}, 'location');
+                var prom1 = this.db.updateDocument(requestData.id, userid, {images: {picture: pictureData.url}}, 'location');
 
                 // update all trips containing this location
-                var prom2 = this.db.updateTripsWithLocationImage(value.id, userid, metaData.imageLocation);
+                var prom2 = this.db.updateTripsWithLocationImage(requestData.id, userid, {picture: pictureData.url});
 
-                return Promise.all([prom1, prom2])
+                return Promise.all([prom1, prom2]);
+            }).then((value:any) => {
+                value.imageLocation = pictureData.url;
+                reply(value).created(pictureData.url);
+            }).catch(reply)
 
-            }).then(value => {
-
-                // reply finally
-                this.replySuccess(reply, metaData.imageLocation, value[0])
-
-            }).catch(reply);
+            //  save all other kinds of images after replying
+            .then(() => {
+                readStream = imageProcessor.createCroppedStream(cropping, this.imageSize.thumb.size); // Thumbnail
+                attachmentData.name = this.imageSize.thumb.name;
+                return this.db.savePicture(requestData.id, attachmentData, readStream)
+            }).then(() => {
+                readStream = imageProcessor.createCroppedStream(cropping, this.imageSize.mini.size); // mini
+                attachmentData.name = this.imageSize.mini.name;
+                return this.db.savePicture(requestData.id, attachmentData, readStream)
+            }).then(() => {
+                readStream = imageProcessor.createCroppedStream(cropping, this.imageSize.midi.size); // midi
+                attachmentData.name = this.imageSize.midi.name;
+                return this.db.savePicture(requestData.id, attachmentData, readStream)
+            }).then(() => {
+                readStream = imageProcessor.createCroppedStream(cropping, this.imageSize.maxi.size); // maxi
+                attachmentData.name = this.imageSize.maxi.name;
+                return this.db.savePicture(requestData.id, attachmentData, readStream)
+            }).catch(err => log(err));
 
     }
 
