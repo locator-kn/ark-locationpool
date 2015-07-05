@@ -46,7 +46,7 @@ class Locationpool {
         });
 
         this._register(server, options);
-        initLogging(server)
+        initLogging(server);
         next();
     };
 
@@ -511,21 +511,6 @@ class Locationpool {
             }).catch(err => log(err));
 
     }
-
-    /**
-     * reply a success message for uploading a picture.
-     *
-     * @param reply
-     * @param imageLocation
-     */
-    private replySuccess = (reply, imageLocation, dbresponse) => {
-        reply({
-            message: 'ok',
-            imageLocation: imageLocation,
-            id: dbresponse.id,
-            rev: dbresponse.rev
-        });
-    };
 
 
     /**
