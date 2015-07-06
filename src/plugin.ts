@@ -486,7 +486,7 @@ class Locationpool {
         }
 
         // get requestData needed for output or database
-        var pictureData = imageProcessor.createFileInformation(name);
+        var pictureData = imageProcessor.createFileInformation(name, 'locations');
         var attachmentData = pictureData.attachmentData;
         attachmentData.name = this.imageSize.max.name;
 
