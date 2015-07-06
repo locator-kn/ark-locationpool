@@ -252,6 +252,8 @@ class Locationpool {
                             this.imageSize.max.name,
                             this.imageSize.mid.name,
                             this.imageSize.small.name,
+                            this.imageSize.mobile.name,
+                            this.imageSize.mobileThumb.name
                         ])
                     }).unknown()
                 }
@@ -494,6 +496,8 @@ class Locationpool {
         var readStream = imageProcessor.createCroppedStream(cropping, this.imageSize.max.size);  // max
         var small = imageProcessor.createCroppedStream(cropping, this.imageSize.small.size); // mini
         var mid = imageProcessor.createCroppedStream(cropping, this.imageSize.mid.size); // midi
+        var mobile = imageProcessor.createCroppedStream(cropping, this.imageSize.mobile.size); // mobile
+        var mobileThumb = imageProcessor.createCroppedStream(cropping, this.imageSize.mobileThumb.size); // mobileThumb
 
         this.db.savePicture(requestData.id, attachmentData, readStream)
             .then(() => {
@@ -516,7 +520,13 @@ class Locationpool {
             }).then(() => {
                 attachmentData.name = this.imageSize.mid.name;
                 return this.db.savePicture(requestData.id, attachmentData, mid)
+            }).then(() => {
+                attachmentData.name = this.imageSize.mobile.name;
+                return this.db.savePicture(requestData.id, attachmentData, mobile)
 
+            }).then(() => {
+                attachmentData.name = this.imageSize.mobileThumb.name;
+                return this.db.savePicture(requestData.id, attachmentData, mobileThumb)
             }).catch(err => log(err));
 
     }
