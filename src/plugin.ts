@@ -505,8 +505,8 @@ class Locationpool {
 
                 return Promise.all([prom1, prom2]);
             }).then((value:any) => {
-                value.imageLocation = pictureData.url;
-                reply(value).created(pictureData.url);
+                value[0].imageLocation = pictureData.url;
+                reply(value[0]).created(pictureData.url);
             }).catch(reply)
 
             //  save all other kinds of images after replying
