@@ -220,11 +220,19 @@ class Locationpool {
             config: {
                 auth: false,
                 handler: (request, reply) => {
-                    // create file name
-                    var file = request.params.name + '.' + request.params.ext;
+                    var documentId = request.params.locationid;
+                    var name = request.params.name;
+                    var ext = request.params.ext;
+                    var size = request.query.size;
 
-                    // get and reply file stream from database
-                    reply(this.db.getPicture(request.params.locationid, file));
+                    if (size) {
+                        reply().redirect('/api/v1/data/' + documentId + '/' + name + '.' + ext + '?size=' + size);
+                    } else {
+                        // redirect to the biggest size
+                        reply().redirect('/api/v1/data/' + documentId + '/' + name + '.' + ext +
+                            '?size=' + this.imageSize.max.name);
+                    }
+
                 },
                 description: 'Get a picture of a location',
                 notes: 'sample call: /locations/1222123132/locationTitle-location.jpg. The url is found, when a ' +
@@ -238,7 +246,14 @@ class Locationpool {
                             .required(),
                         ext: this.joi.string()
                             .required().regex(this.regex.imageExtension)
-                    }
+                    },
+                    query: this.joi.object().keys({
+                        size: this.joi.string().valid([
+                            this.imageSize.max.name,
+                            this.imageSize.mid.name,
+                            this.imageSize.small.name,
+                        ])
+                    }).unknown()
                 }
 
             }
@@ -473,13 +488,12 @@ class Locationpool {
         // get requestData needed for output or database
         var pictureData = imageProcessor.createFileInformation(name);
         var attachmentData = pictureData.attachmentData;
+        attachmentData.name = this.imageSize.max.name;
 
         // create a read stream and crop it
-        var readStream = imageProcessor.createCroppedStream(cropping, {x: 1200, y: 703});  // TODO: size needs to be discussed
-        var thumb = imageProcessor.createCroppedStream(cropping, this.imageSize.thumb.size); // Thumbnail
-        var mini = imageProcessor.createCroppedStream(cropping, this.imageSize.mini.size); // mini
-        var midi = imageProcessor.createCroppedStream(cropping, this.imageSize.midi.size); // midi
-        var maxi = imageProcessor.createCroppedStream(cropping, this.imageSize.maxi.size); // maxi
+        var readStream = imageProcessor.createCroppedStream(cropping, this.imageSize.max.size);  // max
+        var small = imageProcessor.createCroppedStream(cropping, this.imageSize.small.size); // mini
+        var mid = imageProcessor.createCroppedStream(cropping, this.imageSize.mid.size); // midi
 
         this.db.savePicture(requestData.id, attachmentData, readStream)
             .then(() => {
@@ -497,17 +511,12 @@ class Locationpool {
 
             //  save all other kinds of images after replying
             .then(() => {
-                attachmentData.name = this.imageSize.thumb.name;
-                return this.db.savePicture(requestData.id, attachmentData, thumb)
+                attachmentData.name = this.imageSize.small.name;
+                return this.db.savePicture(requestData.id, attachmentData, small)
             }).then(() => {
-                attachmentData.name = this.imageSize.mini.name;
-                return this.db.savePicture(requestData.id, attachmentData, mini)
-            }).then(() => {
-                attachmentData.name = this.imageSize.midi.name;
-                return this.db.savePicture(requestData.id, attachmentData, midi)
-            }).then(() => {
-                attachmentData.name = this.imageSize.maxi.name;
-                return this.db.savePicture(requestData.id, attachmentData, maxi)
+                attachmentData.name = this.imageSize.mid.name;
+                return this.db.savePicture(requestData.id, attachmentData, mid)
+
             }).catch(err => log(err));
 
     }
