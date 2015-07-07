@@ -490,7 +490,7 @@ class Locationpool {
         // get requestData needed for output or database
         var pictureData = imageProcessor.createFileInformation(name, 'locations');
         var attachmentData = pictureData.attachmentData;
-        attachmentData.name = this.imageSize.max.mid;
+        attachmentData.name = this.imageSize.mid.name;
 
         // create a read stream and crop it
         var max = imageProcessor.createCroppedStream(cropping, this.imageSize.max.size);  // max
@@ -511,14 +511,17 @@ class Locationpool {
             }).then((value:any) => {
                 value[0].imageLocation = pictureData.url;
                 reply(value[0]).created(pictureData.url);
-            }).catch(reply)
+            }).catch(err => {
+                reply(err[0] || err[1]);
+            })
+
 
             //  save all other kinds of images after replying
             .then(() => {
                 attachmentData.name = this.imageSize.small.name;
                 return this.db.savePicture(requestData.id, attachmentData, small)
             }).then(() => {
-                attachmentData.name = this.imageSize.mid.max;
+                attachmentData.name = this.imageSize.max.name;
                 return this.db.savePicture(requestData.id, attachmentData, max)
             }).then(() => {
                 attachmentData.name = this.imageSize.mobile.name;
@@ -527,7 +530,7 @@ class Locationpool {
             }).then(() => {
                 attachmentData.name = this.imageSize.mobileThumb.name;
                 return this.db.savePicture(requestData.id, attachmentData, mobileThumb)
-            }).catch(err => log(err));
+            }).catch(err => log(err[0] + err[1]));
 
     }
 
