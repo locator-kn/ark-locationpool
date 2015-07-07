@@ -490,16 +490,16 @@ class Locationpool {
         // get requestData needed for output or database
         var pictureData = imageProcessor.createFileInformation(name, 'locations');
         var attachmentData = pictureData.attachmentData;
-        attachmentData.name = this.imageSize.max.name;
+        attachmentData.name = this.imageSize.max.mid;
 
         // create a read stream and crop it
-        var readStream = imageProcessor.createCroppedStream(cropping, this.imageSize.max.size);  // max
+        var max = imageProcessor.createCroppedStream(cropping, this.imageSize.max.size);  // max
         var small = imageProcessor.createCroppedStream(cropping, this.imageSize.small.size); // mini
         var mid = imageProcessor.createCroppedStream(cropping, this.imageSize.mid.size); // midi
         var mobile = imageProcessor.createCroppedStream(cropping, this.imageSize.mobile.size); // mobile
         var mobileThumb = imageProcessor.createCroppedStream(cropping, this.imageSize.mobileThumb.size); // mobileThumb
 
-        this.db.savePicture(requestData.id, attachmentData, readStream)
+        this.db.savePicture(requestData.id, attachmentData, mid)
             .then(() => {
                 // save new urls into location document
                 var prom1 = this.db.updateDocument(requestData.id, userid, {images: {picture: pictureData.url}}, 'location');
@@ -518,8 +518,8 @@ class Locationpool {
                 attachmentData.name = this.imageSize.small.name;
                 return this.db.savePicture(requestData.id, attachmentData, small)
             }).then(() => {
-                attachmentData.name = this.imageSize.mid.name;
-                return this.db.savePicture(requestData.id, attachmentData, mid)
+                attachmentData.name = this.imageSize.mid.max;
+                return this.db.savePicture(requestData.id, attachmentData, max)
             }).then(() => {
                 attachmentData.name = this.imageSize.mobile.name;
                 return this.db.savePicture(requestData.id, attachmentData, mobile)
