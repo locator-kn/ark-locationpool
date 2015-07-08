@@ -19,7 +19,7 @@ class Locationpool {
     private imageValidation:any;
     private imageSchemaPost:any;
     private imageSize:any;
-    private scheduler:any
+    private scheduler:any;
 
 
     constructor() {
