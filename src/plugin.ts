@@ -1,6 +1,6 @@
 declare var Promise:any;
 
-import {initLogging, log} from './util/logging'
+import {initLogging, log, logError} from './util/logging'
 
 export interface IRegister {
     (server:any, options:any, next:any): void;
@@ -19,6 +19,7 @@ class Locationpool {
     private imageValidation:any;
     private imageSchemaPost:any;
     private imageSize:any;
+    private scheduler:any
 
 
     constructor() {
@@ -32,6 +33,7 @@ class Locationpool {
         this.regex = imageUtil.regex;
         this.imageValidation = imageUtil.validation;
         this.imgProcessor = imageUtil.image;
+        this.scheduler = require('node-schedule');
 
         this.initSchema();
     }
@@ -51,7 +53,8 @@ class Locationpool {
     };
 
     private _register(server, options) {
-        //register all routes
+
+        this.registerScheduledJob();
 
         // payload for image
         var imagePayload = {
@@ -68,6 +71,8 @@ class Locationpool {
             }
         };
 
+
+        //register all routes
         // GET
         server.route({
             method: 'GET',
@@ -589,5 +594,28 @@ class Locationpool {
             locationTitle: this.joi.string().required()
         });
 
+    }
+
+    private registerScheduledJob():void {
+        // every day at 01:00
+        var job = this.scheduler.scheduleJob('0 1 * * *', () => {
+            // check integrity of all locations
+            this.db.getAllLocations().then(res => {
+
+                res.forEach(location => {
+
+                    this.joi.validate(location, this.locationSchemePOST.unknown(), (err, result) => {
+                        if (result.preLocation) {
+                            return;
+                        }
+
+                        if (err) {
+                            logError('This location is corrupt: ' + location._id + ' Because of: ' + err)
+                        }
+                    })
+
+                })
+            }).catch(err => logError(err));
+        })
     }
 }
