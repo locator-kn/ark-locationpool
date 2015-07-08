@@ -11,5 +11,14 @@ export function log(logging:string) {
         return;
     }
 
-    server.log(logging);
+    server.log(['locationpool'], logging);
+}
+
+export function logError(logging:string) {
+    if (!server) {
+        console.error('Server not initialized for logging');
+        return;
+    }
+
+    server.log(['locationpool', 'Error'], logging);
 }
