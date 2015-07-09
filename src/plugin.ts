@@ -1,6 +1,6 @@
 declare var Promise:any;
 
-import {initLogging, log, logError} from './util/logging'
+import {initLogging, log, logError, logCorrupt} from './util/logging'
 
 export interface IRegister {
     (server:any, options:any, next:any): void;
@@ -610,7 +610,7 @@ class Locationpool {
                         }
 
                         if (err) {
-                            logError('This location is corrupt: ' + location._id + ' Because of: ' + err)
+                            logCorrupt('This location is corrupt: ' + location._id + ' Because of: ' + err)
                         }
                     })
 

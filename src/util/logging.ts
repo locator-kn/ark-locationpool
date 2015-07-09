@@ -22,3 +22,13 @@ export function logError(logging:string) {
 
     server.log(['locationpool', 'Error'], logging);
 }
+
+
+export function logCorrupt(logging:string) {
+    if (!server) {
+        console.error('Server not initialized for logging');
+        return;
+    }
+
+    server.log(['trip', 'corrupt'], logging);
+}
