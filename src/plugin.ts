@@ -13,6 +13,7 @@ class Locationpool {
     private boom:any;
     private db:any;
     private locationSchemePOST:any;
+    private locationSchemaProduction:any;
     private locationSchemePUT:any;
     private regex:any;
     private imgProcessor:any;
@@ -352,7 +353,7 @@ class Locationpool {
             }
         });
 
-        // update/create the main picture of a location
+        // update the main picture of a location
         server.route({
             method: ['PUT', 'POST'],
             path: '/locations/{locationid}/picture',
@@ -594,6 +595,17 @@ class Locationpool {
             locationTitle: this.joi.string().required()
         });
 
+        this.locationSchemaProduction = this.locationSchemePOST.keys({
+            create_date: this.joi.date().required(),
+            images: this.joi.object().keys({
+                googlemap: this.joi.string().required(),
+                picture: this.joi.string()
+            }),
+            delete: this.joi.boolean().only(false),
+            public: this.joi.boolean(),
+            userid: this.joi.string().required(),
+        })
+
     }
 
     private registerScheduledJob():void {
@@ -601,16 +613,18 @@ class Locationpool {
         var job = this.scheduler.scheduleJob('0 1 * * *', () => {
             // check integrity of all locations
             this.db.getAllLocations().then(res => {
+                logCorrupt('Started scanning for corrupt files');
 
                 res.forEach(location => {
 
-                    this.joi.validate(location, this.locationSchemePOST.unknown(), (err, result) => {
+                    this.joi.validate(location, this.locationSchemaProduction.required().unknown(), (err, result) => {
                         if (result.preLocation) {
                             return;
                         }
 
                         if (err) {
-                            logCorrupt('This location is corrupt: ' + location._id + ' Because of: ' + err)
+                            logCorrupt('This location is corrupt: ' + location._id + ' Because of: ');
+                            logCorrupt(err)
                         }
                     })
 
