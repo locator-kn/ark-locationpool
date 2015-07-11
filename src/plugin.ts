@@ -12,6 +12,7 @@ class Locationpool {
     private joi:any;
     private boom:any;
     private db:any;
+    private data:any;
     private locationSchemePOST:any;
     private locationSchemaProduction:any;
     private locationSchemePUT:any;
@@ -45,6 +46,12 @@ class Locationpool {
         // set dependency to the database plugin
         server.dependency('ark-database', (server, next) => {
             this.db = server.plugins['ark-database'];
+            next();
+        });
+
+        // set dependency to the database plugin
+        server.dependency('ark-staticdata', (server, next) => {
+            this.data = server.plugins['ark-staticdata'];
             next();
         });
 
@@ -359,8 +366,54 @@ class Locationpool {
             path: '/locations/{locationid}/picture',
             config: {
                 payload: imagePayload,
-                handler: this.mainPicture,
-                description: 'Update/Change the main picture of a particular location',
+                handler: (request, reply) => {
+                    this.isItMyLocation(request.auth.credentials._id, request.params.locationid)
+                        .then(() => {
+
+                            /*  this.data.uploadImage(request, 'location')
+                             .then(value => {
+                             return reply(value).created(value.url);
+                             }).catch(reply);*/
+
+
+                            var name = request.payload.locationTitle + '-location';
+                            var stripped = this.imgProcessor.stripHapiRequestObject(request);
+                            stripped.options.id = request.params.locationid;
+
+                            this.savePicture(stripped.options, stripped.cropping, name, request.auth.credentials._id, reply)
+                        }).catch(reply);
+                },
+                description: 'Update the main picture of a particular location',
+                notes: 'The picture in the database will be updated.',
+                tags: ['api', 'location'],
+                validate: {
+                    params: {
+                        locationid: this.joi.string().required()
+                    },
+                    payload: this.imageSchemaPost
+                },
+                plugins: swaggerUpload
+            }
+        });
+
+
+        // update the main picture of a location
+        server.route({
+            method: ['PUT', 'POST'],
+            path: '/locations/{locationid}/picture/mobile',
+            config: {
+                payload: imagePayload,
+                handler: (request, reply) => {
+                    this.isItMyLocation(request.auth.credentials._id, request.params.locationid)
+                        .then(() => {
+                            var name = request.payload.locationTitle + '-location';
+                            var stripped = this.imgProcessor.stripHapiRequestObject(request);
+                            stripped.options.id = request.params.locationid;
+
+                            this.savePictureMobilePicture(stripped.options, stripped.cropping, name, request.auth.credentials._id, reply)
+                        }).catch(reply);
+                },
+                description: 'Update the main picture of a particular location',
                 notes: 'The picture in the database will be updated.',
                 tags: ['api', 'location'],
                 validate: {
@@ -496,7 +549,6 @@ class Locationpool {
         // get requestData needed for output or database
         var pictureData = imageProcessor.createFileInformation(name, 'locations');
         var attachmentData = pictureData.attachmentData;
-        attachmentData.name = this.imageSize.mid.name;
 
         // create a read stream and crop it
         var max = imageProcessor.createCroppedStream(cropping, this.imageSize.max.size);  // max
@@ -505,6 +557,8 @@ class Locationpool {
         var mobile = imageProcessor.createCroppedStream(cropping, this.imageSize.mobile.size); // mobile
         var mobileThumb = imageProcessor.createCroppedStream(cropping, this.imageSize.mobileThumb.size); // mobileThumb
 
+
+        attachmentData.name = this.imageSize.mid.name;
         this.db.savePicture(requestData.id, attachmentData, mid)
             .then(() => {
                 // save new urls into location document
@@ -518,28 +572,81 @@ class Locationpool {
                 value[0].imageLocation = pictureData.url;
                 reply(value[0]).created(pictureData.url);
             }).catch(err => {
-                reply(err[0] || err[1]);
+                reply(err);
             })
-
 
             //  save all other kinds of images after replying
             .then(() => {
+                attachmentData.name = this.imageSize.mobile.name;
+                return this.db.savePicture(requestData.id, attachmentData, mobile);
+            }).then(() => {
                 attachmentData.name = this.imageSize.small.name;
                 return this.db.savePicture(requestData.id, attachmentData, small)
             }).then(() => {
                 attachmentData.name = this.imageSize.max.name;
                 return this.db.savePicture(requestData.id, attachmentData, max)
             }).then(() => {
-                attachmentData.name = this.imageSize.mobile.name;
-                return this.db.savePicture(requestData.id, attachmentData, mobile)
-
-            }).then(() => {
                 attachmentData.name = this.imageSize.mobileThumb.name;
                 return this.db.savePicture(requestData.id, attachmentData, mobileThumb)
-            }).catch(err => log(err[0] + err[1]));
+            }).catch(err => logError(err));
 
     }
 
+    savePictureMobilePicture(requestData:any, cropping:any, name:string, userid:string, reply:any):void {
+
+        // create object for processing images
+        var imageProcessor = this.imgProcessor.processor(requestData);
+        if (imageProcessor.error) {
+            return reply(this.boom.badRequest(imageProcessor.error))
+        }
+
+// get requestData needed for output or database
+        var pictureData = imageProcessor.createFileInformation(name, 'locations');
+        var attachmentData = pictureData.attachmentData;
+
+// create a read stream and crop it
+        var max = imageProcessor.createCroppedStream(cropping, this.imageSize.max.size);  // max
+        var small = imageProcessor.createCroppedStream(cropping, this.imageSize.small.size); // mini
+        var mid = imageProcessor.createCroppedStream(cropping, this.imageSize.mid.size); // midi
+        var mobile = imageProcessor.createCroppedStream(cropping, this.imageSize.mobile.size); // mobile
+        var mobileThumb = imageProcessor.createCroppedStream(cropping, this.imageSize.mobileThumb.size); // mobileThumb
+
+
+        attachmentData.name = this.imageSize.mobile.name;
+        this.db.savePicture(requestData.id, attachmentData, mobile)
+            .then(() => {
+                // save new urls into location document
+                var prom1 = this.db.updateDocument(requestData.id, userid, {images: {picture: pictureData.url}}, 'location');
+
+                // update all trips containing this location
+                var prom2 = this.db.updateTripsWithLocationImage(requestData.id, userid, {picture: pictureData.url});
+
+
+                return Promise.all([prom1, prom2]);
+            }).then((value:any) => {
+                value[0].imageLocation = pictureData.url;
+                reply(value[0]).created(pictureData.url);
+            }).catch(err => {
+                reply(err);
+            })
+
+            //  save all other kinds of images after replying
+            .then(() => {
+
+                attachmentData.name = this.imageSize.mid.name;
+                return this.db.savePicture(requestData.id, attachmentData, mid);
+            }).then(() => {
+                attachmentData.name = this.imageSize.small.name;
+                return this.db.savePicture(requestData.id, attachmentData, small)
+            }).then(() => {
+                attachmentData.name = this.imageSize.max.name;
+                return this.db.savePicture(requestData.id, attachmentData, max)
+            }).then(() => {
+                attachmentData.name = this.imageSize.mobileThumb.name;
+                return this.db.savePicture(requestData.id, attachmentData, mobileThumb)
+            }).catch(err => logError(err));
+
+    }
 
     /**
      * Utility method for checking if the given userid belongs to the given locationid
@@ -580,7 +687,6 @@ class Locationpool {
                 long: this.joi.number().required(),
                 lat: this.joi.number().required()
             }),
-            budget: this.joi.string().allow(''),
             tags: this.joi.array().items(this.joi.string().allow('').required()),
             delete: this.joi.boolean().default(false),
             public: this.joi.boolean().default(true)
