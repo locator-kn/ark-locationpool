@@ -367,20 +367,21 @@ class Locationpool {
             config: {
                 payload: imagePayload,
                 handler: (request, reply) => {
-                    this.isItMyLocation(request.auth.credentials._id, request.params.locationid)
+                    var locationid = request.params.locationid;
+                    var userid = request.auth.credentials._id;
+                    this.isItMyLocation(userid, locationid)
                         .then(() => {
 
-                            /*  this.data.uploadImage(request, 'location')
-                             .then(value => {
-                             return reply(value).created(value.url);
-                             }).catch(reply);*/
+                            var url;
 
+                            this.data.uploadImage(request, 'location')
+                                .then(value => {
+                                    url = value.imageLocation;
+                                    return reply(value).created(url);
+                                }).then(() => {
+                                    return this.db.updateTripsWithLocationImage(locationid, userid, {picture: url});
+                                }).catch(reply);
 
-                            var name = request.payload.locationTitle + '-location';
-                            var stripped = this.imgProcessor.stripHapiRequestObject(request);
-                            stripped.options.id = request.params.locationid;
-
-                            this.savePicture(stripped.options, stripped.cropping, name, request.auth.credentials._id, reply)
                         }).catch(reply);
                 },
                 description: 'Update the main picture of a particular location',
@@ -404,13 +405,21 @@ class Locationpool {
             config: {
                 payload: imagePayload,
                 handler: (request, reply) => {
-                    this.isItMyLocation(request.auth.credentials._id, request.params.locationid)
+                    var locationid = request.params.locationid;
+                    var userid = request.auth.credentials._id;
+                    this.isItMyLocation(userid, locationid)
                         .then(() => {
-                            var name = request.payload.locationTitle + '-location';
-                            var stripped = this.imgProcessor.stripHapiRequestObject(request);
-                            stripped.options.id = request.params.locationid;
 
-                            this.savePictureMobilePicture(stripped.options, stripped.cropping, name, request.auth.credentials._id, reply)
+                            var url;
+
+                            this.data.uploadImage(request, 'location')
+                                .then(value => {
+                                    url = value.imageLocation;
+                                    return reply(value).created(url);
+                                }).then(() => {
+                                    return this.db.updateTripsWithLocationImage(locationid, userid, {picture: url});
+                                }).catch(reply);
+
                         }).catch(reply);
                 },
                 description: 'Update the main picture of a particular location',
@@ -517,15 +526,20 @@ class Locationpool {
         };
         this.db.createLocation(preLocation).then(data => {
 
-            // get user id from authentication credentials
-            request.payload.userid = userid;
-
-            var stripped = this.imgProcessor.stripHapiRequestObject(request);
-            stripped.options.id = data.id;
-            name = request.payload.locationTitle + '-location';
+           // stripped.options.id = ;
+            request.payload.locationTitle = request.payload.locationTitle + '-location';
+            request.params.locationid = data.id;
 
             // save picture to the just created document
-            this.savePicture(stripped.options, stripped.cropping, name, request.auth.credentials._id, reply)
+            var url;
+
+            this.data.uploadImage(request, 'location')
+                .then(value => {
+                    url = value.imageLocation;
+                    return reply(value).created(url);
+                }).then(() => {
+                    return this.db.updateTripsWithLocationImage(data.id, userid, {picture: url});
+                }).catch(reply);
 
         }).catch(reply);
     }
