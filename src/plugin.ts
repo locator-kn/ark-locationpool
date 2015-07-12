@@ -17,7 +17,6 @@ class Locationpool {
     private locationSchemaProduction:any;
     private locationSchemePUT:any;
     private regex:any;
-    private imgProcessor:any;
     private imageValidation:any;
     private imageSchemaPost:any;
     private imageSize:any;
@@ -30,12 +29,12 @@ class Locationpool {
         };
         this.joi = require('joi');
         this.boom = require('boom');
+        this.scheduler = require('node-schedule');
+
         var imageUtil = require('locator-image-utility');
-        this.imageSize = require('locator-image-utility').size;
+        this.imageSize = imageUtil.size;
         this.regex = imageUtil.regex;
         this.imageValidation = imageUtil.validation;
-        this.imgProcessor = imageUtil.image;
-        this.scheduler = require('node-schedule');
 
         this.initSchema();
     }
@@ -227,16 +226,13 @@ class Locationpool {
                 auth: false,
                 handler: (request, reply) => {
                     var documentId = request.params.locationid;
-                    var name = request.params.name;
-                    var ext = request.params.ext;
                     var size = request.query.size;
 
-                    if (size) {
-                        reply().redirect('/api/v1/data/' + documentId + '/' + name + '.' + ext + '?size=' + size);
+                    if (!size) {
+                        // return biggest picture if no size is given
+                        return reply(this.db.getPicture(documentId, this.imageSize.max.name));
                     } else {
-                        // redirect to the biggest size
-                        reply().redirect('/api/v1/data/' + documentId + '/' + name + '.' + ext +
-                            '?size=' + this.imageSize.max.name);
+                        return reply(this.db.getPicture(documentId, size));
                     }
 
                 },
@@ -363,16 +359,12 @@ class Locationpool {
                     var userid = request.auth.credentials._id;
                     this.isItMyLocation(userid, locationid)
                         .then(() => {
-
-                            var url;
-
-                            this.data.uploadImage(request, 'location')
-                                .then((value:any) => {
-                                    url = value.imageLocation;
-                                    return reply(value).created(url);
-                                }).then(() => {
-                                    return this.db.updateTripsWithLocationImage(locationid, userid, {picture: url});
-                                }).catch(reply);
+                            // upload all images
+                            return this.data.uploadImage(request, 'location')
+                        }).then((value:any) => {
+                            var url = value.imageLocation;
+                            return reply(value).created(url);
+                            return this.db.updateTripsWithLocationImage(locationid, userid, {picture: url});
 
                         }).catch(reply);
                 },
@@ -398,18 +390,16 @@ class Locationpool {
                 handler: (request, reply) => {
                     var locationid = request.params.locationid;
                     var userid = request.auth.credentials._id;
+
                     this.isItMyLocation(userid, locationid)
                         .then(() => {
-
-                            var url;
-
-                            this.data.uploadImage(request, 'location')
-                                .then((value:any) => {
-                                    url = value.imageLocation;
-                                    return reply(value).created(url);
-                                }).then(() => {
-                                    return this.db.updateTripsWithLocationImage(locationid, userid, {picture: url});
-                                }).catch(reply);
+                            // upload all images
+                            return this.data.uploadImage(request, 'location')
+                        }).then((value:any) => {
+                            // reply and update other trips
+                            var url = value.imageLocation;
+                            reply(value).created(url);
+                            return this.db.updateTripsWithLocationImage(locationid, userid, {picture: url});
 
                         }).catch(reply);
                 },
@@ -497,24 +487,23 @@ class Locationpool {
             userid: userid,
             preLocation: true
         };
-        this.db.createLocation(preLocation).then(data => {
 
-           // stripped.options.id = ;
-            request.payload.locationTitle = request.payload.locationTitle + '-location';
-            request.params.locationid = data.id;
+        this.db.createLocation(preLocation)
+            .then(data => {
 
-            // save picture to the just created document
-            var url;
+                // upload image
+                request.params.locationid = data.id;
+                return this.data.uploadImage(request, 'location')
 
-            this.data.uploadImage(request, 'location')
-                .then((value:any) => {
-                    url = value.imageLocation;
-                    return reply(value).created(url);
-                }).then(() => {
-                    return this.db.updateTripsWithLocationImage(data.id, userid, {picture: url});
-                }).catch(reply);
+            }).then((value:any) => {
 
-        }).catch(reply);
+                var url = value.imageLocation;
+
+                // reply and update other trips
+                reply(value).created(url);
+                return this.db.updateTripsWithLocationImage(value.id, userid, {picture: url});
+
+            }).catch(reply);
     }
 
     /**
