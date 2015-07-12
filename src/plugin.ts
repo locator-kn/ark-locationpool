@@ -305,7 +305,26 @@ class Locationpool {
             path: '/users/my/locations/picture',
             config: {
                 payload: imagePayload,
-                handler: this.createLocationWithImage,
+                handler: (request, reply) => {
+                    this.createLocationWithImage(request, reply, 'location')
+                },
+                description: 'Creates a new location with form data. Used when a picture is uploaded first',
+                tags: ['api', 'location'],
+                validate: {
+                    payload: this.imageSchemaPost
+                }
+            }
+        });
+
+        // create a new location with form data
+        server.route({
+            method: 'POST',
+            path: '/users/my/locations/picture/mobile',
+            config: {
+                payload: imagePayload,
+                handler: (request, reply) => {
+                    this.createLocationWithImage(request, reply, 'location-mobile')
+                },
                 description: 'Creates a new location with form data. Used when a picture is uploaded first',
                 tags: ['api', 'location'],
                 validate: {
@@ -479,7 +498,7 @@ class Locationpool {
         return 'register';
     }
 
-    private createLocationWithImage(request, reply) {
+    private createLocationWithImage(request, reply, type) {
         // create an empty "preLocation" before uploading a picture
         var userid = request.auth.credentials._id;
         var preLocation = {
@@ -493,7 +512,7 @@ class Locationpool {
 
                 // upload image
                 request.params.locationid = data.id;
-                return this.data.uploadImage(request, 'location')
+                return this.data.uploadImage(request, type)
 
             }).then((value:any) => {
 
