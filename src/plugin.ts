@@ -354,7 +354,10 @@ class Locationpool {
 
                     var prom1 = this.db.updateLocation(request.params.locationid, request.auth.credentials._id, request.payload);
 
-                    reply(Promise.all([prom1, prom2 || true]));
+                    Promise.all([prom1, prom2 || true])
+                        .then(value => {
+                            reply(value[0])
+                        }).catch(reply);
                 },
                 description: 'Update a single location of a user',
                 tags: ['api', 'locationpool'],
