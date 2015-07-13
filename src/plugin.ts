@@ -109,8 +109,13 @@ class Locationpool {
                 auth: false,
                 handler: (request, reply) => {
                     var city = request.params.city;
+                    var query = request.params.query;
 
-                    reply(this.db.getLocationsByCity(city));
+                    if (!query) {
+                        reply(this.db.getLocationsByCity(city));
+                    } else {
+                        reply(this.db.getPagedLocationsByCity(city, query))
+                    }
                 },
                 description: 'Get all locations from a city. Currently only cities from Konstanz, Freiburg, Karlsruhe, Tuebuingen and Heidelberg',
                 notes: 'Return a list of all saved  location of a city.',
@@ -118,7 +123,11 @@ class Locationpool {
                 validate: {
                     params: {
                         city: this.joi.string().required()
-                    }
+                    },
+                    query: this.joi.object().keys({
+                        page: this.joi.number().integer(),
+                        elements: this.joi.number().integer().positive()
+                    }).and('page', 'elements')
                 }
             }
         });
