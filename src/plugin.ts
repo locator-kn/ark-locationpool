@@ -109,7 +109,7 @@ class Locationpool {
                 auth: false,
                 handler: (request, reply) => {
                     var city = request.params.city;
-                    var query = request.params.query;
+                    var query = request.query;
 
                     if (!query) {
                         reply(this.db.getLocationsByCity(city));
