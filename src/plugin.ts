@@ -111,7 +111,7 @@ class Locationpool {
                     var city = request.params.city;
                     var query = request.query;
 
-                    if (!query) {
+                    if (!query.page) {
                         reply(this.db.getLocationsByCity(city));
                     } else {
                         reply(this.db.getPagedLocationsByCity(city, query))
