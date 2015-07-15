@@ -53,9 +53,7 @@ lab.before(function (done) {
         if (err) {
             return done(err);
         }
-
-        // TODO set up database with needed design documents
-
+        
         console.log('Set up complete');
         server.on('request-error', function (arg, err) {
             console.log('Error response (500) sent for request: ' + arg.id + ' because:\n' + err);
