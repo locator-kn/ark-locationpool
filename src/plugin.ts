@@ -256,7 +256,8 @@ class Locationpool {
                         name: this.joi.string()
                             .required(),
                         ext: this.joi.string()
-                            .required().regex(this.regex.imageExtension)
+                            .required()
+                            //.regex(this.regex.imageExtension) // HACK: Google map api key
                     },
                     query: this.joi.object().keys({
                         size: this.joi.string().valid([
