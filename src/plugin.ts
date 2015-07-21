@@ -192,6 +192,24 @@ class Locationpool {
 
         server.route({
             method: 'GET',
+            path: '/locations/latest',
+            config: {
+                auth: false,
+                handler: this.latestLocationsHandler,
+                description: 'Get latest locations',
+                notes: 'returns latest location, can be used with pagination',
+                tags: ['api', 'locationpool', 'latest'],
+                validate: {
+                    query: this.joi.object().keys({
+                        page: this.joi.number().integer(),
+                        elements: this.joi.number().integer().positive()
+                    }).and('page', 'elements')
+                }
+            }
+        });
+
+        server.route({
+            method: 'GET',
             path: '/users/{userid}/locations',
             config: {
                 auth: false,
@@ -509,6 +527,10 @@ class Locationpool {
 
         // Register
         return 'register';
+    }
+
+    latestLocationsHandler(request, reply) {
+        this.db.getAllLocationsPaged(request.query).then(reply).catch(reply);
     }
 
     private createLocationWithImage(request, reply, type) {
