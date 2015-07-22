@@ -84,7 +84,7 @@ class Locationpool {
                 description: 'Get the location pool of a user',
                 notes: 'Return a list of all saved  location of a user.',
                 tags: ['api', 'locationpool'],
-                vallidate: {
+                validate: {
                     query: this.joi.object().keys({
                         page: this.joi.number().integer().min(0),
                         elements: this.joi.number().integer().min(0)
