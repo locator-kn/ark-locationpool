@@ -79,11 +79,17 @@ class Locationpool {
             path: '/users/my/locations',
             config: {
                 handler: (request, reply) => {
-                    reply(this.db.getLocationsByUserId(request.auth.credentials._id));
+                    reply(this.db.getLocationsByUserId(request.auth.credentials._id, request.query));
                 },
                 description: 'Get the location pool of a user',
                 notes: 'Return a list of all saved  location of a user.',
-                tags: ['api', 'locationpool']
+                tags: ['api', 'locationpool'],
+                validate: {
+                    query: this.joi.object().keys({
+                        page: this.joi.number().integer().min(0),
+                        elements: this.joi.number().integer().min(0)
+                    }).unknown().and('page', 'elements')
+                }
             }
         });
 
@@ -195,13 +201,15 @@ class Locationpool {
             path: '/locations/latest',
             config: {
                 auth: false,
-                handler: this.latestLocationsHandler,
+                handler: (request, reply) => {
+                    return reply(this.db.getAllLocationsPaged(request.query));
+                },
                 description: 'Get latest locations',
                 notes: 'returns latest location, can be used with pagination',
                 tags: ['api', 'locationpool', 'latest'],
                 validate: {
                     query: this.joi.object().keys({
-                        page: this.joi.number().integer(),
+                        page: this.joi.number().integer().min(0),
                         elements: this.joi.number().integer().positive()
                     }).and('page', 'elements')
                 }
@@ -214,7 +222,7 @@ class Locationpool {
             config: {
                 auth: false,
                 handler: (request, reply) => {
-                    reply(this.db.getPublicLocationsByUserId(request.params.userid))
+                    reply(this.db.getPublicLocationsByUserId(request.params.userid, request.query))
                 },
                 description: 'Get locationpool of a user',
                 notes: 'Returns the locationpool of a user.',
@@ -222,7 +230,11 @@ class Locationpool {
                 validate: {
                     params: {
                         userid: this.joi.string().required()
-                    }
+                    },
+                    query: this.joi.object().keys({
+                        page: this.joi.number().integer().min(0),
+                        elements: this.joi.number().integer().positive()
+                    }).unknown().and('page', 'elements')
                 }
             }
         });
@@ -275,7 +287,7 @@ class Locationpool {
                             .required(),
                         ext: this.joi.string()
                             .required()
-                            //.regex(this.regex.imageExtension) // HACK: Google map api key
+                        //.regex(this.regex.imageExtension) // HACK: Google map api key
                     },
                     query: this.joi.object().keys({
                         size: this.joi.string().valid([
@@ -527,10 +539,6 @@ class Locationpool {
 
         // Register
         return 'register';
-    }
-
-    latestLocationsHandler(request, reply) {
-        this.db.getAllLocationsPaged(request.query).then(reply).catch(reply);
     }
 
     private createLocationWithImage(request, reply, type) {
