@@ -322,6 +322,8 @@ class Locationpool {
                         category: request.payload.category,
                         tags: request.payload.tags,
                         geotag: request.payload.geotag,
+                        public: request.payload.public,
+                        delete: request.payload.delete,
                         images: {
                             googlemap: mapURL
                         }
