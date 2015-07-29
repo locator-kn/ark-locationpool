@@ -26,76 +26,26 @@ Server has now additional route endpoints for handling location related operatio
 For example:
 ####GET
 
-|Ressource   | Description  |  on Success | on Failure |
-|---|---|---|---|
-|/users/:userID/locations/  | returns a locationpool (list) of saved location of the user   | json object | statusCode: 404 |
-|/users/:userID/locations/:locationsID | returns a particular saved location of the user | json object | statusCode: 404 |
+|Ressource   | Description  |  on Success | 
+|---|---|---|
+|/users/:userID/locations/  | returns a locationpool (list) of saved location of the user   | json object | 
+|/users/:userID/locations/:locationsID | returns a particular saved location of the user | json object |
 
 ####DELETE
-|Ressource   | Description  |  on Success | on Failure |
-|---|---|---|---|
-|/users/:userID/locations/ | deletes a locationpool (list) of saved location of the user   | json object | statusCode: 404 |
-|/users/:userID/locations/:locationsID | deletes a particular saved location of the user | json object | statusCode: 404 |
+|Ressource   | Description  |  on Success |
+|---|---|---|
+|/users/:userID/locations/:locationsID | deletes a particular saved location of the user | json object |
 
 ####POST
 
-|Ressource   | Description  | on Failure |
+|Ressource   | Description  |
 |---|---|---|---|
-|/users/:userID/locations/  | adds a location into the location pool of the user   |  statusCode: 404 |
-
-Note: Bulk add will be done if payload is array.
+|/users/:userID/locations/  | adds a location into the location pool of the user   |
 
 ####PUT
 
+|Ressource   | Description  |
+|---|---|---|
+|/users/:userID/locations/:locationsID  | updates a location of the location pool of the user   |
 
-|Ressource   | Description  | on Failure |
-|---|---|---|---|
-|/users/:userID/locations/:locationsID  | updates a location of the location pool of the user   |  statusCode: 404 |
-
-
-
-### Dummy json for GET:
-
-```
-{
-   "_id": "9ab15b624eec31eb56dffa3ed10006f7",
-   "_rev": "1-eba4d566488a8efb82edd9dcb3d3be1c",
-   "title": "Strandbar",
-   "description": "Fett maan! Sand und Bier! Geile Musiiik!!",
-   "city": "constance",
-   "budget": 100,
-   "pics": [
-   ],
-   "category": "studentenshit",
-   "type": "location",
-   "geotag": {
-       "long": "47.668475",
-       "lat": "9.170435"
-   },
-   "userId": "9ab15b624eec31eb56dffa3ed10006f5"
-}
-```
-
-### Dummy json for POST:
-
-param: 
-```
-"userId": "492387434908fs5747e35"
-```
-
-```
-{
-   "title": "Strandbar",
-   "description": "Fett maan! Sand und Bier! Geile Musiiik!!",
-   "city": "constance",
-   "budget": 100,
-   "pics": [
-   ],
-   "category": "studentenshit",
-   "type": "location",
-   "geotag": {
-       "long": "47.668475",
-       "lat": "9.170435"
-   }
-}
-```
+For a list of all routes checkout the main server [ark](https://github.com/locator-kn/ark), start it and open [swagger] (http://localhost:3001/documentation?tags=locationpool)
