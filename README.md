@@ -1,21 +1,29 @@
-# backend-locationpool
-For managing all locations of a user.
+# ark-locationpool
+A hapi-plugin for [ark](https://github.com/locator-kn/ark) our application server of [locator-app.com](http://www.locator-app.com/). Used for handling the location(s) of a user.
 
-# Documents
+## Usage
+```npm install ark-locationpool```  to install the plugin (use the option ```-S``` to include it in your project)
 
-### Beschreibung
-Jeder _local_ hat ein pool an seinen favorisierten location, die er "cool" findet. Eine Location Besteht aus:
- - einem Ort (Name) (o.ä.?)
- - Bilder (+ Thumbnail)
- - Geotag  // Evtl. in der Desktop Version mit ner GoogleMap umsetzen?
- - Beschreibung 
- - URL zu Bild
- - und/oder ???
+```js
+// Server 
+var Locationpool = require('ark-locationpool'); // import it to your code
+var loc = new Locationpool(); // create new instance
 
-Der Locationpool eines Benutzers besteht aus einer _leichtgewichtige_ Liste aller Locations. //TODO: diskutieren.
+server.register(loc, function(err) { // register plugin to hapi server
 
+ if (err) {
+  return console.error(err);
+ } else {
+  server.start();  // start server
+ }
+ 
+});
 
-### Routes
+```
+
+Server has now additional route endpoints for handling location related operations.
+
+For example:
 ####GET
 
 |Ressource   | Description  |  on Success | on Failure |
