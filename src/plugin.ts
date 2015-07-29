@@ -218,6 +218,26 @@ class Locationpool {
 
         server.route({
             method: 'GET',
+            path: '/locations/{locationid}/related',
+            config: {
+                auth: false,
+                handler: (request, reply) => {
+                    var numberOfElements = request.query.elements || 3;
+                    return reply(this.db.getRelatedLocations(request.paramas.locationid, numberOfElements));
+                },
+                description: 'Get related locations',
+                notes: 'returns related location. ?elements=X can be used to set number of returned locations, defaults to 3 ',
+                tags: ['api', 'locationpool', 'related'],
+                validate: {
+                    query: this.joi.object().keys({
+                        elements: this.joi.number().integer().positive()
+                    })
+                }
+            }
+        });
+
+        server.route({
+            method: 'GET',
             path: '/users/{userid}/locations',
             config: {
                 auth: false,
