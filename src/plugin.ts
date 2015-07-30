@@ -223,7 +223,7 @@ class Locationpool {
                 auth: false,
                 handler: (request, reply) => {
                     var numberOfElements = request.query.elements || 3;
-                    return reply(this.db.getRelatedLocations(request.paramas.locationid, numberOfElements));
+                    return reply(this.db.getRelatedLocations(request.params.locationid, numberOfElements));
                 },
                 description: 'Get related locations',
                 notes: 'returns related location. ?elements=X can be used to set number of returned locations, defaults to 3 ',
@@ -231,7 +231,10 @@ class Locationpool {
                 validate: {
                     query: this.joi.object().keys({
                         elements: this.joi.number().integer().positive()
-                    })
+                    }),
+                    params: {
+                        locationid: this.joi.string().required()
+                    }
                 }
             }
         });
