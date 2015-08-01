@@ -7,6 +7,7 @@ var Boom = require('boom');
 // home made plugins
 var Locationpool = require('../index');
 var Database = require('ark-database');
+var StaticData = require('ark-staticdata');
 
 // testing environment
 var testDbeName = 'test';
@@ -48,13 +49,15 @@ lab.before(function (done) {
     // set up database with test params
     var db = new Database(testDbeName, testEnv.db, testDbURL, testDbPort);
     // register needed plugin
-    var plugins = [db, new Locationpool()];
+    var plugins = [db, new Locationpool(), new StaticData()];
     server.register(plugins, opt, function (err) {
         if (err) {
             return done(err);
         }
-        
+
         console.log('Set up complete');
+
+        // log any error for debugging reasons
         server.on('request-error', function (arg, err) {
             console.log('Error response (500) sent for request: ' + arg.id + ' because:\n' + err);
         });
@@ -72,7 +75,9 @@ lab.experiment('Locationpool Plugin creates a Location and', function () {
     lab.beforeEach(function (done) {
 
         createTestLocation(function (response) {
-
+            if (response.statusCode !== 200) {
+                console.log(response.payload); // debugging
+            }
             // set global id for other test cases
             id = response.result.id;
             expect(response.statusCode).to.equal(200);
@@ -84,6 +89,9 @@ lab.experiment('Locationpool Plugin creates a Location and', function () {
 
         // rollback
         deleteTestLocation(id, function (response) {
+            if (response.statusCode !== 200) {
+                console.log(response.payload); // debugging
+            }
 
             expect(response.statusCode).to.equal(200);
             done();
@@ -131,6 +139,9 @@ lab.experiment('Locationpool Plugin creates a Location and', function () {
     test('it updates a location successfully', function (done) {
 
         updateTestLocation(id, function (res) {
+            if (res.statusCode !== 200) {
+                console.log(res.payload); // debugging
+            }
 
             expect(res.statusCode).to.be.equal(200);
             done();
@@ -175,6 +186,7 @@ lab.experiment('Locationpool Plugin creates a PreLocation with image and', funct
 
 lab.after(function (done) {
     console.log('Test complete');
+    console.log(Code.incomplete());
     done();
 });
 
@@ -200,8 +212,12 @@ function createTestLocation(callback) {
                 id: '58433437e7710a957cd798b0774a79385389035b'
             },
 
-            category: 'Bar',
-            moods: ['TestMood']
+            geotag: {
+                long: 9.169710874557495,
+                lat: 47.668906023791884
+            },
+
+            tags: ['TestMood']
         }
     }, callback)
 }
@@ -220,8 +236,12 @@ function updateTestLocation(id, callback) {
                 id: '58433437e7710a957cd798b0774a79385389035b'
             },
 
-            category: 'Bar',
-            moods: ['TestMood']
+            geotag: {
+                long: 9.169710874557495,
+                lat: 47.668906023791884
+            },
+
+            tags: ['TestMood']
         }
     }, callback)
 }
