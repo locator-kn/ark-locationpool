@@ -2,6 +2,7 @@
 var Code = require('code');
 var Hapi = require('hapi');
 var Lab = require('lab');
+var Joi = require('joi');
 var Boom = require('boom');
 
 // home made plugins
@@ -19,6 +20,7 @@ var testDbPort = 5984;
 var lab = exports.lab = Lab.script();
 var expect = Code.expect;
 var test = lab.test;
+var schema = require('./schema.js');
 
 var id, server, locationpool;
 
@@ -74,10 +76,14 @@ lab.experiment('Locationpool Plugin creates a Location and', function () {
 
     lab.beforeEach(function (done) {
 
-        createTestLocation(function (response) {
-            if (response.statusCode !== 200) {
-                console.log(response.payload); // debugging
-            }
+        // create location
+        server.inject({
+            method: 'POST',
+            url: '/api/v1/users/my/locations',
+            payload: schema.locationPost
+        }, function (response) {
+
+            Joi.assert(response.payload, schema.successObject);
             // set global id for other test cases
             id = response.result.id;
             expect(response.statusCode).to.equal(200);
@@ -87,12 +93,13 @@ lab.experiment('Locationpool Plugin creates a Location and', function () {
 
     lab.afterEach(function (done) {
 
-        // rollback
-        deleteTestLocation(id, function (response) {
-            if (response.statusCode !== 200) {
-                console.log(response.payload); // debugging
-            }
+        // delete previously created location
+        server.inject({
+            method: 'DELETE',
+            url: '/api/v1/users/my/locations/' + id
+        }, function (response) {
 
+            Joi.assert(response.payload, schema.successObject);
             expect(response.statusCode).to.equal(200);
             done();
         });
@@ -128,7 +135,10 @@ lab.experiment('Locationpool Plugin creates a Location and', function () {
 
     test('it deletes a location, which is not present', function (done) {
 
-        deleteTestLocation('NOT_VALID_ID', function (response) {
+        server.inject({
+            method: 'DELETE',
+            url: '/api/v1/users/my/locations/' + 'NOT_VALID_ID'
+        }, function (response) {
 
             expect(response.result.statusCode).to.be.equal(400);
             expect(response.result.message).to.be.equal('CouchError: not_found: missing');
@@ -138,11 +148,13 @@ lab.experiment('Locationpool Plugin creates a Location and', function () {
 
     test('it updates a location successfully', function (done) {
 
-        updateTestLocation(id, function (res) {
-            if (res.statusCode !== 200) {
-                console.log(res.payload); // debugging
-            }
+        server.inject({
+            method: 'PUT',
+            url: '/api/v1/users/my/locations/' + id,
+            payload: schema.locationPut
+        }, function (res) {
 
+            Joi.assert(res.payload, schema.successObject);
             expect(res.statusCode).to.be.equal(200);
             done();
         })
@@ -186,7 +198,6 @@ lab.experiment('Locationpool Plugin creates a PreLocation with image and', funct
 
 lab.after(function (done) {
     console.log('Test complete');
-    console.log(Code.incomplete());
     done();
 });
 
@@ -198,51 +209,11 @@ function deleteTestLocation(id, callback) {
     }, callback)
 }
 
-function createTestLocation(callback) {
-    server.inject({
-        method: 'POST',
-        url: '/api/v1/users/my/locations',
-        payload: {
-            title: 'testLocation',
-            description: 'testLocationDescription',
-
-            city: {
-                title: 'Konstanz',
-                place_id: 'ChIJWx8MOBv2mkcR0JnfpbdrHwQ',
-                id: '58433437e7710a957cd798b0774a79385389035b'
-            },
-
-            geotag: {
-                long: 9.169710874557495,
-                lat: 47.668906023791884
-            },
-
-            tags: ['TestMood']
-        }
-    }, callback)
-}
-
 function updateTestLocation(id, callback) {
     server.inject({
         method: 'PUT',
         url: '/api/v1/users/my/locations/' + id,
-        payload: {
-            title: 'testLocation',
-            description: 'testLocationDescription',
-
-            city: {
-                title: 'Konstanz',
-                place_id: 'ChIJWx8MOBv2mkcR0JnfpbdrHwQ',
-                id: '58433437e7710a957cd798b0774a79385389035b'
-            },
-
-            geotag: {
-                long: 9.169710874557495,
-                lat: 47.668906023791884
-            },
-
-            tags: ['TestMood']
-        }
+        payload: schema.locationPut
     }, callback)
 }
 
