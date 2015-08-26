@@ -562,6 +562,44 @@ class Locationpool {
             }
         });
 
+        server.route({
+            method: 'POST',
+            path: '/locations/{locationid}/schoenHier',
+            config: {
+                handler: (request, reply) => {
+
+                    reply(this.db.schoenHier(request.params.locationid, request.auth.credentials._id, 'locations'));
+                },
+                description: 'mark location with shoenhier',
+                notes: 'schoenhier',
+                tags: ['api', 'locationpool', 'schoenhier'],
+                validate: {
+                    params: {
+                        locationid: this.joi.string().required()
+                    }
+                }
+            }
+        });
+
+        server.route({
+            method: 'POST',
+            path: '/locations/{locationid}/nichtMehrSchoenHier',
+            config: {
+                handler: (request, reply) => {
+
+                    reply(this.db.nichtMehrSchoenHier(request.params.locationid, request.auth.credentials._id, 'locations'));
+                },
+                description: 'mark location with nichtMehrSchoenHier',
+                notes: 'schoenhier',
+                tags: ['api', 'locationpool', 'snichtMehrSchoenHierchoenhier'],
+                validate: {
+                    params: {
+                        locationid: this.joi.string().required()
+                    }
+                }
+            }
+        });
+
         // Register
         return 'register';
     }
