@@ -450,7 +450,7 @@ class Locationpool {
                             return this.data.uploadImage(request, 'location')
                         }).then((value:any) => {
                             var url = value.imageLocation;
-                            return reply(value).created(url);
+                            reply(value).created(url);
                             return this.db.updateTripsWithLocationImage(locationid, userid, {picture: url});
 
                         }).catch(reply);
