@@ -666,6 +666,11 @@ class Locationpool {
                 id: this.joi.string().required()
             }),
 
+            category: this.joi.object().keys({
+                main: this.joi.object(),
+                sub: this.joi.object()
+            }),
+
             geotag: this.joi.object().keys({
                 long: this.joi.number().required(),
                 lat: this.joi.number().required()
