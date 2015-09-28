@@ -1,6 +1,6 @@
 {
   "name": "ark-locationpool",
-  "version": "4.11.0",
+  "version": "4.12.0",
   "description": "Plugin for managing all location of a user",
   "main": "index.js",
   "scripts": {
