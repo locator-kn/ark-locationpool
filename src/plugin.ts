@@ -215,6 +215,25 @@ class Locationpool {
                 }
             }
         });
+        server.route({
+            method: 'GET',
+            path: '/locations/search/{city}/{category?}',
+            config: {
+                auth: false,
+                handler: (request, reply) => {
+                    return reply(this.db.getLocationsBySearchQuery(request.params.city, request.params.category));
+                },
+                description: 'Get locations by city and a optional category',
+                notes: 'returns locations by city (place_id) and category (query_name)',
+                tags: ['api', 'locationpool', 'search'],
+                validate: {
+                    params: this.joi.object().keys({
+                        city: this.joi.string().min(0).required(),
+                        category: this.joi.string()
+                    })
+                }
+            }
+        });
 
         server.route({
             method: 'GET',
