@@ -221,6 +221,9 @@ class Locationpool {
             config: {
                 auth: false,
                 handler: (request, reply) => {
+                    if(!request.params.category) {
+                        return reply(this.db.getLocationsByCity(request.params.city))
+                    }
                     return reply(this.db.getLocationsBySearchQuery(request.params.city, request.params.category));
                 },
                 description: 'Get locations by city and a optional category',
